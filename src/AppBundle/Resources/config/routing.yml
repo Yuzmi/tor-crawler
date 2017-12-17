@@ -1,0 +1,7 @@
+homepage:
+    path: /
+    defaults: { _controller: AppBundle:Default:index }
+
+check_onion:
+    path: /check/{hash}
+    defaults: { _controller: AppBundle:Default:checkOnion }

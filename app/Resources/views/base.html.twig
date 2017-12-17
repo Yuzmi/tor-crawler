@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Tor Crawler{% endblock %}</title>
+
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+
+        {# jQuery #}
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+        {# Bootstrap #}
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+        {# Font Awesome #}
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+        {% block stylesheets %}
+            <style>
+                .table > tbody > tr > td {
+                    vertical-align: middle;
+                }
+
+                .flashbags {
+                    position:absolute;
+                    top:0px;
+                    width:100%;
+                }
+            </style>
+        {% endblock %}
+    </head>
+    <body>
+        {% block body %}
+            {# Flash messages #}
+            {% if app.session.flashbag.peekAll|length > 0 %}
+                {% for type, flash_messages in app.session.flashBag.all %}
+                    {% for flash_message in flash_messages %}
+                        <div class="alert alert-{{ type }}">
+                            {% if type == 'success' %}
+                                <i class="fa fa-check"></i>
+                            {% elseif type == "danger" %}
+                                <i class="fa fa-exclamation-triangle"></i>
+                            {% endif %}
+                            {{ flash_message|raw }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+
+            <h1 class="text-center">
+                <a href="{{ path('homepage') }}">
+                    Tor crawler
+                </a>
+            </h1>
+
+            <br>
+
+            <div class="container">
+                {% block content %}{% endblock %}
+            </div>
+        {% endblock %}
+
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

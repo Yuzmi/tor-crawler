@@ -1,0 +1,29 @@
+AppBundle\Entity\Onion:
+    type: entity
+    table: onion
+    repositoryClass: AppBundle\Repository\OnionRepository
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        hash:
+            type: string
+            length: 16
+        dateCreated:
+            type: datetime
+    oneToMany:
+        resources:
+            targetEntity: Resource
+            mappedBy: onion
+    oneToOne:
+        resource:
+            targetEntity: Resource
+            joinColumn:
+                name: resource_id
+                referencedColumnName: id
+                nullable: true
+                cascade: ["persist"]
+    uniqueConstraints:
+        hash_idx:
+            columns: [ hash ]

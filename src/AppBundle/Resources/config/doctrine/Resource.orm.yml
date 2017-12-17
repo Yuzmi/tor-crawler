@@ -1,0 +1,51 @@
+AppBundle\Entity\Resource:
+    type: entity
+    table: resource
+    repositoryClass: AppBundle\Repository\ResourceRepository
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        url:
+            type: string
+            length: 255
+        hashUrl:
+            type: string
+            column: url_hash
+            length: 255
+        title:
+            type: text
+            nullable: true
+        lastLength:
+            type: integer
+            nullable: true
+        lastError:
+            type: string
+            length: 255
+            column: error_last
+            nullable: true
+        countErrors:
+            type: integer
+            column: error_count
+        dateCreated:
+            type: datetime
+        dateChecked:
+            type: datetime
+            nullable: true
+        dateSeen:
+            type: datetime
+            nullable: true
+        dateError:
+            type: datetime
+            nullable: true
+    manyToOne:
+        onion:
+            targetEntity: Onion
+            inversedBy: resources
+            joinColumn:
+                name: onion_id
+                referencedColumnName: id
+    uniqueConstraints:
+        url_hash_idx:
+            columns: [ url_hash ]
