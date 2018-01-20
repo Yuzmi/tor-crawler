@@ -9,11 +9,11 @@ AppBundle\Entity\Resource:
     fields:
         url:
             type: string
-            length: 255
+            length: 191
         hashUrl:
             type: string
             column: url_hash
-            length: 255
+            length: 191
         title:
             type: text
             nullable: true
@@ -28,7 +28,7 @@ AppBundle\Entity\Resource:
             column: error_count
         lastError:
             type: string
-            length: 255
+            length: 191
             column: error_last
             nullable: true
         dateCreated:
