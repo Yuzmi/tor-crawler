@@ -8,16 +8,12 @@ class DefaultController extends BaseController {
     public function indexAction(Request $request) {
     	$qb = $this->getRepo("Onion")->createQueryBuilder("o")
     		->select("o, r")
-    		->innerJoin("o.resource", 'r')
+    		->leftJoin("o.resource", 'r')
     		->orderBy("o.dateCreated", "DESC");
 
     	$type = $request->query->get("type");
-    	if($type == "valid") {
+    	if($type == "seen") {
     		$qb->andWhere("r.dateSeen IS NOT NULL");
-            $qb->andWhere("r.countErrors < 3");
-    	} elseif($type == "invalid") {
-    		$qb->andWhere("r.dateSeen IS NOT NULL");
-            $qb->andWhere("r.countErrors >= 3");
     	} elseif($type == "unseen") {
     		$qb->andWhere("r.dateSeen IS NULL");
     	} else {
@@ -36,6 +32,10 @@ class DefaultController extends BaseController {
             }
 
             $qb->setParameter("q", "%".$q."%");
+        }
+
+        if(!$request->query->get("sort")) {
+            $qb->orderBy("r.dateSeen", "DESC");
         }
 
     	$query = $qb->getQuery();

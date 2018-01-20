@@ -62,9 +62,14 @@ class Resource
      */
     private $onion;
 
-    public function __construct() {
+    public function __construct($url = null) {
         $this->dateCreated = new \DateTime();
+        $this->totalSuccess = 0;
         $this->countErrors = 0;
+
+        if($url) {
+            $this->setUrl($url);
+        }
     }
 
     public function __toString() {
@@ -348,5 +353,34 @@ class Resource
     public function getCountErrors()
     {
         return $this->countErrors;
+    }
+    /**
+     * @var integer
+     */
+    private $totalSuccess;
+
+
+    /**
+     * Set totalSuccess
+     *
+     * @param integer $totalSuccess
+     *
+     * @return Resource
+     */
+    public function setTotalSuccess($totalSuccess)
+    {
+        $this->totalSuccess = $totalSuccess;
+
+        return $this;
+    }
+
+    /**
+     * Get totalSuccess
+     *
+     * @return integer
+     */
+    public function getTotalSuccess()
+    {
+        return $this->totalSuccess;
     }
 }

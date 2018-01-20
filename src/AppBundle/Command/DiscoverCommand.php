@@ -9,14 +9,24 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
+use AppBundle\Services\Parser;
+
 class DiscoverCommand extends ContainerAwareCommand {
-	protected function configure() {
+	private $parser;
+
+    public function __construct(Parser $parser) {
+        $this->parser = $parser;
+        parent::__construct();
+    }
+
+    protected function configure() {
         $this
             ->setName('app:discover')
             ->setDescription('Discover onions')
             ->addArgument('url', InputArgument::OPTIONAL, 'URL to begin from')
             ->addOption('daniel', 'd', InputOption::VALUE_NONE, 'Use the Daniel listing')
-            ->addOption('skip-errors', null, InputOption::VALUE_NONE, 'Skip onions with errors')
+            ->addOption('only-valid', null, InputOption::VALUE_NONE, 'Skip invalid onions')
+            ->addOption('only-new', null, InputOption::VALUE_NONE, 'Skip known onions')
         ;
     }
 
@@ -30,12 +40,15 @@ class DiscoverCommand extends ContainerAwareCommand {
 
         if($listUrl) {
             if(filter_var($listUrl, FILTER_VALIDATE_URL) !== false) {
-                $result = $this->getContainer()->get("parser")->getUrlContent($listUrl);
+                $result = $this->parser->getUrlContent($listUrl);
                 if(!$result["success"]) {
-                    $output->writeln($result["error"]); return;
+                    if(isset($result["error"])) {
+                        $output->writeln($result["error"]);
+                    }
+                    return;
                 }
 
-                $hashes = $this->getContainer()->get("parser")->getOnionHashesFromContent($result["content"]);
+                $hashes = $this->parser->getOnionHashesFromContent($result["content"]);
             } else {
                 $output->writeln("URL invalide"); return;
             }
@@ -44,7 +57,7 @@ class DiscoverCommand extends ContainerAwareCommand {
 
             $dbOnions = $em->getRepository("AppBundle:Onion")->createQueryBuilder("o")
                 ->leftJoin("o.resource", "r")
-                ->orderBy("r.dateChecked", "DESC")
+                ->orderBy("r.dateChecked", "ASC")
                 ->getQuery()->getResult();
 
             foreach($dbOnions as $o) {
@@ -57,40 +70,48 @@ class DiscoverCommand extends ContainerAwareCommand {
             $output->writeln("No hash found"); return;
         }
 
-        $allHashes = $hashes;
-        $todoHashes = $hashes;
-
         $i = 0;
-        while($hash = array_pop($todoHashes)) { // while(list($key, $value) = each($allHashes))
+        while(list($key, $value) = each($hashes)) {
+            $hash = $value;
             $i++;
             $output->write($i."/".$countHashes." : ");
 
-            $onion = $this->getContainer()->get("parser")->getOnionForHash($hash);
+            $onion = $this->parser->getOnionForHash($hash);
             if(!$onion) {
-                $output->writeln("KO : ".$hash); continue;
+                $output->writeln("KO : ".$hash);
+                continue;
             }
 
-            if($input->getOption("skip-errors")) {
+            if($input->getOption("only-valid")) {
                 $res = $onion->getResource();
                 if($res && !$res->getDateSeen() && $res->getCountErrors() >= 3) {
-                    $output->writeln("Skip : ".$hash); continue;
+                    $output->writeln("Skip : ".$hash);
+                    continue;
+                }
+            }
+
+            if($input->getOption("only-new")) {
+                $res = $onion->getResource();
+                if(!$res || !$res->getDateChecked()) {
+                    $output->writeln("Skip : ".$hash);
+                    continue;
                 }
             }
                 
-            $result = $this->getContainer()->get("parser")->parseOnion($onion);
+            $result = $this->parser->parseOnion($onion);
             if(!$result["success"]) {
-                $output->writeln("KO : ".$hash); continue;
+                $output->writeln("KO : ".$hash." : ".round($result["duration"], 3)."s : ".$result["error"]);
+                continue;
             }
                 
             foreach($result["onion-hashes"] as $h) {
-                if(!in_array($h, $allHashes)) {
-                    $allHashes[] = $h;
-                    $todoHashes[] = $h;
+                if(!in_array($h, $hashes)) {
+                    $hashes[] = $h;
                     $countHashes++;
                 }
             }
 
-            $output->writeln("OK : ".$hash." : ".$result["title"]);
+            $output->writeln("OK : ".$hash." : ".$hash." : ".$result["duration"]."s : ".$result["title"]);
         }
     }
 }

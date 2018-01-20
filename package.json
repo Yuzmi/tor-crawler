@@ -1,0 +1,8 @@
+{
+	"name": "tor-crawler",
+	"description": "Tor crawler",
+	"version": "0.0.1",
+	"dependencies": {
+		"node-cmd": "*"
+	}
+}

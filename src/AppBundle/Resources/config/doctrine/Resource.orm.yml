@@ -20,14 +20,17 @@ AppBundle\Entity\Resource:
         lastLength:
             type: integer
             nullable: true
+        totalSuccess:
+            type: integer
+            column: success_total
+        countErrors:
+            type: integer
+            column: error_count
         lastError:
             type: string
             length: 255
             column: error_last
             nullable: true
-        countErrors:
-            type: integer
-            column: error_count
         dateCreated:
             type: datetime
         dateChecked:

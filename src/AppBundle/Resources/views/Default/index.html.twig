@@ -35,8 +35,7 @@
 
 	{% set navs = {
 		'all': "All",
-		'valid': "Valid",
-		'invalid': "Invalid",
+		'seen': "Seen",
 		'unseen': "Never seen"
 	} %}
 	<ul class="nav nav-tabs nav-justified">
@@ -55,7 +54,7 @@
 				{% set ths = {
 					'o.hash': "Onion",
 					'r.title': "Title",
-					'r.dateCreated': "Added",
+					'o.dateCreated': "Added",
 					'r.dateChecked': "Checked",
 					'r.dateSeen': "Seen"
 				} %}
@@ -82,15 +81,15 @@
 							</button>
 						</td>
 						<td>{{ o.hash }}</td>
-						<td class="title">{{ o.resource.title }}</td>
-						<td title="{{ o.resource.dateCreated|date('Y-m-d H:i:s') }}">
-							{{ o.resource.dateCreated|date('Y-m-d') }}
+						<td class="title">{{ o.resource ? o.resource.title }}</td>
+						<td title="{{ o.dateCreated|date('Y-m-d H:i:s') }}">
+							{{ o.dateCreated|date('Y-m-d') }}
 						</td>
-						<td title="{{ o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d H:i:s') }}">
-							{{ o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d') : "Not yet" }}
+						<td title="{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d H:i:s') }}">
+							{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d') : "Not yet" }}
 						</td>
-						<td title="{{ o.resource.dateSeen ? o.resource.dateSeen|date('Y-m-d H:i:s') }}">
-							{{ o.resource.dateSeen ? o.resource.dateSeen|date('Y-m-d') : "Never" }}
+						<td title="{{ o.resource and o.resource.dateSeen ? o.resource.dateSeen|date('Y-m-d H:i:s') }}">
+							{{ o.resource and o.resource.dateSeen ? o.resource.dateSeen|date('Y-m-d') : "Never" }}
 						</td>
 					</tr>
 					<tr class="onionDetail-{{ o.id }} hidden">

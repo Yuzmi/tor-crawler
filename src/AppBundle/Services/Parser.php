@@ -23,7 +23,7 @@ class Parser {
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_CONNECTTIMEOUT => 15,
             CURLOPT_TIMEOUT => 30
         ));
 
@@ -42,7 +42,12 @@ class Parser {
             }
         );
 
+        $time_start = microtime(true);
         $content = curl_exec($ch);
+        $time_end = microtime(true);
+
+        $response["duration"] = $time_end - $time_start;
+
         if($content === false) {
             $response["error"] = curl_error($ch);
         } else {
@@ -124,12 +129,21 @@ class Parser {
         return $onion;
     }
 
+    public function isOnionUrl($url, $returnHash = false) {
+        $hostname = parse_url($url, PHP_URL_HOST);
+
+        if($hostname !== false && preg_match('#([a-z2-7]{16})\.onion$#i', $hostname, $match)) {
+            return $returnHash ? $match[1] : true;
+        }
+
+        return false;
+    }
+
     public function getOnionForUrl($url) {
         $onion = null;
 
-        $hostname = parse_url($url, PHP_URL_HOST);
-        if($hostname !== false && preg_match('#(.{16})\.onion$#i', $hostname, $match)) {
-            $onion = $this->getOnionForHash($match[1]);
+        if($hash = $this->isOnionUrl($url, true)) {
+            $onion = $this->getOnionForHash($hash);
         }
 
         return $onion;
@@ -154,8 +168,7 @@ class Parser {
 
         $resource = $this->em->getRepository("AppBundle:Resource")->findOnebyUrl($url);
         if(!$resource) {
-            $resource = new Resource();
-            $resource->setUrl($url);
+            $resource = new Resource($url);
             $save = true;
         }
 
@@ -175,37 +188,29 @@ class Parser {
         return $resource;
     }
 
-    public function parseOnion(Onion $onion) {
-        $url = $onion->getUrl();
-
+    public function getResourceForOnion(Onion $onion) {
         $resource = $onion->getResource();
-        if(!$resource || $resource->getUrl() != $url) {
-            $resource = $this->getResourceForUrl($url);
+        
+        if(!$resource || $resource->getUrl() != $onion->getUrl()) {
+            $resource = $this->getResourceForUrl($onion->getUrl());
             $onion->setResource($resource);
 
             $this->em->persist($onion);
             $this->em->flush();
         }
 
-        $result = $this->parseResource($resource);
-
-        return $result;
+        return $resource;
     }
 
-    public function parseOnionUrl($url) {
-        $resource = $this->getResourceForUrl();
+    public function saveResultForResource($result, Resource $resource) {
+        if(isset($result["date"]) && $result["date"]) {
+            $date = $result["date"];
+        } else {
+            $date = new \DateTime();
+        }
 
-        $result = $this->parseResource($resource);
+        $resource->setDateChecked($date);
 
-        return $result;
-    }
-
-    public function parseResource(Resource $resource, $options = array()) {
-        $now = new \DateTime();
-
-        $resource->setDateChecked($now);
-
-        $result = $this->getUrlContent($resource->getUrl());
         if($result["success"]) {
             // Titre
             $result["title"] = $this->getTitleFromHtml($result["content"]);
@@ -224,12 +229,20 @@ class Parser {
             // $result["onion-urls"] = $this->getOnionUrlsFromHtml($result["content"]);
             $result["onion-hashes"] = $this->getOnionHashesFromContent($result["content"]);
             
-            $resource->setDateSeen($now);
+            if($resource->getDateSeen() < $date) {
+                $resource->setDateSeen($date);
+            }
+
+            $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
             $resource->setCountErrors(0);
         } else {
             // Erreur
             $resource->setLastError($result["error"]);
-            $resource->setDateError($now);
+
+            if($resource->getDateError() < $date) {
+                $resource->setDateError($date);
+            }
+
             $resource->setCountErrors($resource->getCountErrors() + 1);
         }
 
@@ -238,5 +251,109 @@ class Parser {
         $this->em->flush();
 
         return $result;
+    }
+
+    public function parseResource(Resource $resource) {
+        $result = $this->getUrlContent($resource->getUrl());
+
+        $result = $this->saveResultForResource($result, $resource);
+
+        return $result;
+    }
+
+    public function parseUrl($url) {
+        $resource = $this->getResourceForUrl($url);
+        if($resource) {
+            $result = $this->parseResource($resource);
+        } else {
+            $result = array("success" => false);
+        }
+
+        return $result;
+    }
+
+    public function parseOnion(Onion $onion) {
+        $resource = $this->getResourceForOnion($onion);
+
+        $result = $this->parseResource($resource);
+
+        return $result;
+    }
+
+    public function parseOnions(array $onions, $multi_exec = false) {
+        $onionsByHash = array();
+        $resources = array();
+        foreach($onions as $onion) {
+            $onionsByHash[$onion->getHash()] = $onion;
+            $resources[$onion->getHash()] = $this->getResourceForOnion($onion);
+        }
+
+        $results = array();
+        if(!$multi_exec) {
+            foreach($resources as $hash => $r) {
+                $results[$hash] = $this->parseResource($r);
+            }
+        } else {
+            $default_options = array(
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_CONNECTTIMEOUT => 15,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_PROXY => "http://127.0.0.1:9050/",
+                CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME
+            );
+
+            $chs = array();
+            foreach($resources as $hash => $r) {
+                $chs[$hash] = curl_init();
+                curl_setopt_array($chs[$hash], $default_options);
+                curl_setopt($chs[$hash], CURLOPT_URL, $r->getUrl());
+            }
+
+            $mh = curl_multi_init();
+            foreach($chs as &$ch) {
+                curl_multi_add_handle($mh, $ch);
+            }
+
+            $active = null;
+            /*do {
+                $mrc = curl_multi_exec($mh, $active);
+            } while($mrc == CURLM_CALL_MULTI_PERFORM);
+
+            while($active && $mrc == CURLM_OK) {
+                if(curl_multi_select($mh) != -1) {
+                    do {
+                        $mrc = curl_multi_exec($mh, $active);
+                    } while($mrc == CURLM_CALL_MULTI_PERFORM);
+                }
+            }*/
+            do {
+                curl_multi_exec($mh, $active);
+                curl_multi_select($mh);
+            } while($active);
+
+            foreach($chs as $hash => &$ch) {
+                $result = array("success" => false);
+
+                $content = curl_multi_getcontent($ch);
+                if($content) {
+                    $result["success"] = true;
+                    $result["content"] = $content;
+                } else {
+                    $result["error"] = curl_error($ch);
+                }
+
+                $result = $this->saveResultForResource($result, $resources[$hash]);
+
+                $results[$hash] = $result;
+
+                curl_multi_remove_handle($mh, $ch);
+                unset($ch);
+            }
+
+            curl_multi_close($mh);
+        }
+
+        return $results;
     }
 }
