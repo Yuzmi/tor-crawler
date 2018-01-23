@@ -111,7 +111,7 @@ class DiscoverCommand extends ContainerAwareCommand {
                 }
             }
 
-            $output->writeln("OK : ".$hash." : ".$hash." : ".$result["duration"]."s : ".$result["title"]);
+            $output->writeln("OK : ".$hash." : ".$result["duration"]."s : ".$result["title"]);
         }
     }
 }
