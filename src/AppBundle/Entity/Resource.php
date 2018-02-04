@@ -2,64 +2,19 @@
 
 namespace AppBundle\Entity;
 
-/**
- * Resource
- */
 class Resource
 {
-    /**
-     * @var integer
-     */
     private $id;
-
-    /**
-     * @var string
-     */
     private $url;
-
-    /**
-     * @var string
-     */
     private $hashUrl;
-
-    /**
-     * @var string
-     */
     private $title;
-
-    /**
-     * @var integer
-     */
     private $lastLength;
-
-    /**
-     * @var string
-     */
     private $lastError;
-
-    /**
-     * @var \DateTime
-     */
     private $dateCreated;
-
-    /**
-     * @var \DateTime
-     */
     private $dateChecked;
-
-    /**
-     * @var \DateTime
-     */
-    private $dateSeen;
-
-    /**
-     * @var \DateTime
-     */
+    private $dateFirstSeen;
+    private $dateLastSeen;
     private $dateError;
-
-    /**
-     * @var \AppBundle\Entity\Onion
-     */
     private $onion;
 
     public function __construct($url = null) {
@@ -254,28 +209,23 @@ class Resource
         return $this->dateChecked;
     }
 
-    /**
-     * Set dateSeen
-     *
-     * @param \DateTime $dateSeen
-     *
-     * @return Resource
-     */
-    public function setDateSeen($dateSeen)
-    {
-        $this->dateSeen = $dateSeen;
-
+    public function setDateFirstSeen($dateFirstSeen) {
+        $this->dateFirstSeen = $dateFirstSeen;
         return $this;
     }
+    public function getDateFirstSeen() {
+        return $this->dateFirstSeen;
+    }
 
-    /**
-     * Get dateSeen
-     *
-     * @return \DateTime
-     */
-    public function getDateSeen()
-    {
-        return $this->dateSeen;
+    public function setDateLastSeen($dateLastSeen) {
+        $this->dateLastSeen = $dateLastSeen;
+        if(!$this->dateFirstSeen) {
+            $this->dateFirstSeen = $dateLastSeen;
+        }
+        return $this;
+    }
+    public function getDateLastSeen() {
+        return $this->dateLastSeen ?: $this->dateFirstSeen;
     }
 
     /**

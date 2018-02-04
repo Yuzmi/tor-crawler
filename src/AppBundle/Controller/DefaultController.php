@@ -13,9 +13,9 @@ class DefaultController extends BaseController {
 
     	$type = $request->query->get("type");
     	if($type == "seen") {
-    		$qb->andWhere("r.dateSeen IS NOT NULL");
+    		$qb->andWhere("r.dateFirstSeen IS NOT NULL");
     	} elseif($type == "unseen") {
-    		$qb->andWhere("r.dateSeen IS NULL");
+    		$qb->andWhere("r.dateFirstSeen IS NULL");
     	} else {
     		$type = "all";
     	}
@@ -35,14 +35,12 @@ class DefaultController extends BaseController {
         }
 
         if(!$request->query->get("sort")) {
-            $qb->orderBy("r.dateSeen", "DESC");
+            $qb->orderBy("r.dateLastSeen", "DESC");
         }
-
-    	$query = $qb->getQuery();
 
     	$paginator  = $this->get('knp_paginator');
     	$pagination = $paginator->paginate(
-    		$query,
+    		$qb->getQuery(),
     		$request->query->get("page", 1),
     		40
     	);

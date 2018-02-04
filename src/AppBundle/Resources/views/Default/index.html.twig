@@ -56,7 +56,7 @@
 					'r.title': "Title",
 					'o.dateCreated': "Added",
 					'r.dateChecked': "Checked",
-					'r.dateSeen': "Seen"
+					'r.dateLastSeen': "Seen"
 				} %}
 				<tr>
 					<th></th>
@@ -65,9 +65,9 @@
 							{{ knp_pagination_sortable(pagination, value, key) }}
 							{% if pagination.isSorted(key) %}
 								{% if pagination.direction == "asc" %}
-									<i class="fa fa-caret-up"></i>
-								{% elseif pagination.direction == "desc" %}
 									<i class="fa fa-caret-down"></i>
+								{% elseif pagination.direction == "desc" %}
+									<i class="fa fa-caret-up"></i>
 								{% endif %}
 							{% endif %}
 						</th>
@@ -88,8 +88,8 @@
 						<td title="{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d H:i:s') }}">
 							{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d') : "Not yet" }}
 						</td>
-						<td title="{{ o.resource and o.resource.dateSeen ? o.resource.dateSeen|date('Y-m-d H:i:s') }}">
-							{{ o.resource and o.resource.dateSeen ? o.resource.dateSeen|date('Y-m-d') : "Never" }}
+						<td title="{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d H:i:s') }}">
+							{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d') : "Never" }}
 						</td>
 					</tr>
 					<tr class="onionDetail-{{ o.id }} hidden">

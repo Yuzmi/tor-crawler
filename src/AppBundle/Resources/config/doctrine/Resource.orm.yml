@@ -8,8 +8,7 @@ AppBundle\Entity\Resource:
             generator: { strategy: AUTO }
     fields:
         url:
-            type: string
-            length: 191
+            type: text
         hashUrl:
             type: string
             column: url_hash
@@ -36,7 +35,10 @@ AppBundle\Entity\Resource:
         dateChecked:
             type: datetime
             nullable: true
-        dateSeen:
+        dateFirstSeen:
+            type: datetime
+            nullable: true
+        dateLastSeen:
             type: datetime
             nullable: true
         dateError:

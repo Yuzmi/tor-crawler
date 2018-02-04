@@ -215,7 +215,7 @@ class Parser {
             // Titre
             $result["title"] = $this->getTitleFromHtml($result["content"]);
             if(!empty($result["title"])) {
-                $title = mb_substr($result["title"], 0, 255);
+                $title = mb_substr($result["title"], 0, 191);
                 $resource->setTitle($title);
             }
 
@@ -229,15 +229,16 @@ class Parser {
             // $result["onion-urls"] = $this->getOnionUrlsFromHtml($result["content"]);
             $result["onion-hashes"] = $this->getOnionHashesFromContent($result["content"]);
             
-            if($resource->getDateSeen() < $date) {
-                $resource->setDateSeen($date);
+            if($resource->getDateLastSeen() < $date) {
+                $resource->setDateLastSeen($date);
             }
 
             $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
             $resource->setCountErrors(0);
         } else {
             // Erreur
-            $resource->setLastError($result["error"]);
+            $error = mb_substr($result["error"], 0, 191);
+            $resource->setLastError($error);
 
             if($resource->getDateError() < $date) {
                 $resource->setDateError($date);

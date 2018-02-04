@@ -25,8 +25,10 @@ class DiscoverCommand extends ContainerAwareCommand {
             ->setDescription('Discover onions')
             ->addArgument('url', InputArgument::OPTIONAL, 'URL to begin from')
             ->addOption('daniel', 'd', InputOption::VALUE_NONE, 'Use the Daniel listing')
-            ->addOption('only-valid', null, InputOption::VALUE_NONE, 'Skip invalid onions')
-            ->addOption('only-new', null, InputOption::VALUE_NONE, 'Skip known onions')
+            ->addOption('seen', null, InputOption::VALUE_NONE, 'Only seen onions')
+            ->addOption('unseen', null, InputOption::VALUE_NONE, 'Only unseen onions')
+            ->addOption('unchecked', null, InputOption::VALUE_NONE, 'Only unchecked onions')
+            ->addOption('shuffle', null, InputOption::VALUE_NONE, 'Changer the order')
         ;
     }
 
@@ -50,15 +52,24 @@ class DiscoverCommand extends ContainerAwareCommand {
 
                 $hashes = $this->parser->getOnionHashesFromContent($result["content"]);
             } else {
-                $output->writeln("URL invalide"); return;
+                $output->writeln("Invalid URL"); return;
             }
         } else {
             $hashes = array();
 
-            $dbOnions = $em->getRepository("AppBundle:Onion")->createQueryBuilder("o")
+            $qb = $em->getRepository("AppBundle:Onion")->createQueryBuilder("o")
                 ->leftJoin("o.resource", "r")
-                ->orderBy("r.dateChecked", "ASC")
-                ->getQuery()->getResult();
+                ->orderBy("o.hash", "ASC");
+
+            if($input->getOption("seen")) {
+                $qb->where("r.dateFirstSeen IS NOT NULL");
+            } elseif($input->getOption("unseen")) {
+                $qb->where("r.dateFirstSeen IS NULL");
+            } elseif($input->getOption("unchecked")) {
+                $qb->where("r.dateChecked IS NULL");
+            }
+            
+            $dbOnions = $qb->getQuery()->getResult();
 
             foreach($dbOnions as $o) {
                 $hashes[] = $o->getHash();
@@ -70,37 +81,25 @@ class DiscoverCommand extends ContainerAwareCommand {
             $output->writeln("No hash found"); return;
         }
 
+        if($input->getOption("shuffle")) {
+            shuffle($hashes);
+        }
+
         $i = 0;
         while(list($key, $value) = each($hashes)) {
             $hash = $value;
             $i++;
-            $output->write($i."/".$countHashes." : ");
+            $output->write($i."/".$countHashes." : ".$hash);
 
             $onion = $this->parser->getOnionForHash($hash);
             if(!$onion) {
-                $output->writeln("KO : ".$hash);
+                $output->writeln(" : KO");
                 continue;
-            }
-
-            if($input->getOption("only-valid")) {
-                $res = $onion->getResource();
-                if($res && !$res->getDateSeen() && $res->getCountErrors() >= 3) {
-                    $output->writeln("Skip : ".$hash);
-                    continue;
-                }
-            }
-
-            if($input->getOption("only-new")) {
-                $res = $onion->getResource();
-                if(!$res || !$res->getDateChecked()) {
-                    $output->writeln("Skip : ".$hash);
-                    continue;
-                }
             }
                 
             $result = $this->parser->parseOnion($onion);
             if(!$result["success"]) {
-                $output->writeln("KO : ".$hash." : ".round($result["duration"], 3)."s : ".$result["error"]);
+                $output->writeln(" : KO : ".round($result["duration"])."s".($result["error"] ? " : ".$result["error"] : ""));
                 continue;
             }
                 
@@ -111,7 +110,7 @@ class DiscoverCommand extends ContainerAwareCommand {
                 }
             }
 
-            $output->writeln("OK : ".$hash." : ".$result["duration"]."s : ".$result["title"]);
+            $output->writeln(" : OK : ".round($result["duration"])."s".($result["title"] ? " : ".$result["title"] : ""));
         }
     }
 }
