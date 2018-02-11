@@ -11,7 +11,7 @@ class DefaultController extends BaseController {
     		->leftJoin("o.resource", 'r')
     		->orderBy("o.dateCreated", "DESC");
 
-    	$type = $request->query->get("type");
+    	$type = $request->query->get("type", "seen");
     	if($type == "seen") {
     		$qb->andWhere("r.dateFirstSeen IS NOT NULL");
     	} elseif($type == "unseen") {
@@ -35,7 +35,7 @@ class DefaultController extends BaseController {
         }
 
         if(!$request->query->get("sort")) {
-            $qb->orderBy("r.dateLastSeen", "DESC");
+            $qb->orderBy("o.dateCreated", "DESC");
         }
 
     	$paginator  = $this->get('knp_paginator');

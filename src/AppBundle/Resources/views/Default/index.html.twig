@@ -86,7 +86,7 @@
 							{{ o.dateCreated|date('Y-m-d') }}
 						</td>
 						<td title="{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d H:i:s') }}">
-							{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d') : "Not yet" }}
+							{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d') : "Never" }}
 						</td>
 						<td title="{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d H:i:s') }}">
 							{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d') : "Never" }}

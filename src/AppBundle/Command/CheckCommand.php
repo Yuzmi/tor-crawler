@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 use AppBundle\Services\Parser;
 
-class DiscoverCommand extends ContainerAwareCommand {
+class CheckCommand extends ContainerAwareCommand {
 	private $parser;
 
     public function __construct(Parser $parser) {
@@ -21,14 +21,15 @@ class DiscoverCommand extends ContainerAwareCommand {
 
     protected function configure() {
         $this
-            ->setName('app:discover')
-            ->setDescription('Discover onions')
+            ->setName('app:check')
+            ->setDescription('Check onions')
             ->addArgument('url', InputArgument::OPTIONAL, 'URL to begin from')
             ->addOption('daniel', 'd', InputOption::VALUE_NONE, 'Use the Daniel listing')
             ->addOption('seen', null, InputOption::VALUE_NONE, 'Only seen onions')
             ->addOption('unseen', null, InputOption::VALUE_NONE, 'Only unseen onions')
             ->addOption('unchecked', null, InputOption::VALUE_NONE, 'Only unchecked onions')
-            ->addOption('shuffle', null, InputOption::VALUE_NONE, 'Changer the order')
+            ->addOption('shuffle', null, InputOption::VALUE_NONE, 'Change the order')
+            ->addOption('discover', null, InputOption::VALUE_NONE, 'Check found onions')
         ;
     }
 
@@ -102,11 +103,13 @@ class DiscoverCommand extends ContainerAwareCommand {
                 $output->writeln(" : KO : ".round($result["duration"])."s".($result["error"] ? " : ".$result["error"] : ""));
                 continue;
             }
-                
-            foreach($result["onion-hashes"] as $h) {
-                if(!in_array($h, $hashes)) {
-                    $hashes[] = $h;
-                    $countHashes++;
+            
+            if($input->getOption("discover")) {
+                foreach($result["onion-hashes"] as $h) {
+                    if(!in_array($h, $hashes)) {
+                        $hashes[] = $h;
+                        $countHashes++;
+                    }
                 }
             }
 
