@@ -23,6 +23,7 @@ class Parser {
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS => 20,
             CURLOPT_CONNECTTIMEOUT => 15,
             CURLOPT_TIMEOUT => 30
         ));
@@ -226,8 +227,8 @@ class Parser {
             }
 
             // Données supplémentaires
-            // $result["onion-urls"] = $this->getOnionUrlsFromHtml($result["content"]);
             $result["onion-hashes"] = $this->getOnionHashesFromContent($result["content"]);
+            $result["onion-urls"] = $this->getOnionUrlsFromHtml($result["content"]);
             
             if($resource->getDateLastSeen() < $date) {
                 $resource->setDateLastSeen($date);
