@@ -26,7 +26,7 @@ class CheckCommand extends ContainerAwareCommand {
             ->addArgument('what', InputArgument::OPTIONAL, 'What do you want to parse ? onions/urls')
             ->addOption('url', 'u', InputOption::VALUE_REQUIRED, 'URL to begin from')
             ->addOption('daniel', 'd', InputOption::VALUE_NONE, 'Use the Daniel listing')
-            ->addOption('filter', null, InputOption::VALUE_NONE, 'Which onions do you want to parse ? all/seen/unseen/unchecked')
+            ->addOption('filter', null, InputOption::VALUE_REQUIRED, 'Which onions do you want to parse ? all/seen/unseen/unchecked')
             ->addOption('shuffle', null, InputOption::VALUE_NONE, 'Shuffle URLs at the beginning')
             ->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Parsing mode')
             ->addOption('follow', 'f', InputOption::VALUE_REQUIRED, 'Follow links (depth)')
