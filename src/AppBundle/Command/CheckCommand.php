@@ -194,14 +194,14 @@ class CheckCommand extends ContainerAwareCommand {
         $i = 0;
         while(!empty($parseUrls)) {
             if($mode == "random") {
-                $dataUrl = $parseUrls[array_rand($parseUrls)];
+                $index = array_rand($parseUrls);
+                $dataUrl = $parseUrls[$index];
+                array_splice($parseUrls, $index, 1);
             } else {
-                $dataUrl = $parseUrls[0];
+                $dataUrl = array_shift($parseUrls);
             }
 
             $url = $dataUrl["url"];
-
-            array_shift($parseUrls);
 
             $i++;
             $output->write($i."/".count($urls)." : ".$url);
