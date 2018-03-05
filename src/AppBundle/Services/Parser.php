@@ -258,7 +258,7 @@ class Parser {
         }
 
         // Enregistrement
-        $this->em->persist($resource);echo $this->em->contains($resource) ? 1 : 0;
+        $this->em->persist($resource);
         $this->em->flush();
 
         return $result;
