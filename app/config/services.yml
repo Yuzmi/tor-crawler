@@ -37,8 +37,3 @@ services:
     parser:
         alias: AppBundle\Services\Parser
         public: true
-
-    text_extension:
-        class: AppBundle\Twig\TextExtension
-        tags:
-            - { name: twig.extension }

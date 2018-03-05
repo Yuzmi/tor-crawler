@@ -173,10 +173,19 @@ class Parser {
             $save = true;
         }
 
-        if(!$resource->getOnion()) {
+        $onion = $resource->getOnion();
+        if(!$onion) {
             $onion = $this->getOnionForUrl($url);
             if($onion) {
                 $resource->setOnion($onion);
+                $save = true;
+            }
+        }
+
+        if($onion) {
+            if(!$onion->getResource() && $onion->getUrl() == $resource->getUrl()) {
+                $onion->setResource($resource);
+                $this->em->persist($onion);
                 $save = true;
             }
         }
@@ -249,7 +258,7 @@ class Parser {
         }
 
         // Enregistrement
-        $this->em->persist($resource);
+        $this->em->persist($resource);echo $this->em->contains($resource) ? 1 : 0;
         $this->em->flush();
 
         return $result;
@@ -282,6 +291,7 @@ class Parser {
         return $result;
     }
 
+    // Experimental
     public function parseOnions(array $onions, $multi_exec = false) {
         $onionsByHash = array();
         $resources = array();

@@ -264,12 +264,4 @@ class CheckCommand extends ContainerAwareCommand {
             $output->writeln(" : OK : ".round($result["duration"])."s".($result["title"] ? " : ".$result["title"] : ""));
         }
     }
-
-    // Blacklist for later...
-    private function getBlacklist() {
-        return [
-            "blockchainbdgpzk.onion",
-            "xvwhmrw3sgwwmkko.onion/index.php?a=search&q=",
-        ];
-    }
 }
