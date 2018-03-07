@@ -23,20 +23,18 @@ class CheckCommand extends ContainerAwareCommand {
         $this
             ->setName('app:check')
             ->setDescription('Check onion urls')
-            ->addArgument('what', InputArgument::OPTIONAL, 'What do you want to parse ? onions/urls')
-            ->addOption('url', 'u', InputOption::VALUE_REQUIRED, 'URL to begin from')
-            ->addOption('daniel', 'd', InputOption::VALUE_NONE, 'Use the Daniel listing')
-            ->addOption('filter', null, InputOption::VALUE_REQUIRED, 'Which onions do you want to parse ? all/seen/unseen/unchecked')
-            ->addOption('shuffle', null, InputOption::VALUE_NONE, 'Shuffle URLs at the beginning')
+            ->addArgument('what', InputArgument::OPTIONAL, 'What do you want to parse ? onions/urls/url')
+            ->addOption('shuffle', 's', InputOption::VALUE_NONE, 'Shuffle URLs at the beginning')
             ->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Parsing mode')
-            ->addOption('follow', 'f', InputOption::VALUE_REQUIRED, 'Follow links (depth)')
+            ->addOption('depth', 'd', InputOption::VALUE_REQUIRED, 'Depth to follow links')
+            ->addOption('filter', 'f', InputOption::VALUE_REQUIRED, 'Which onions do you want to parse ? all/seen/unseen/unchecked')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
 
-        $followDepth = intval($input->getOption("follow"));
+        $maxDepth = max(intval($input->getOption("depth")), 0);
 
         // Filter
         $filterParam = $input->getOption("filter");
@@ -70,116 +68,92 @@ class CheckCommand extends ContainerAwareCommand {
         $urls = []; // Known urls
         $parseUrls = []; // Urls to parse
 
-        $listUrl = $input->getOption("url");
-        if(!$listUrl && $input->getOption("daniel")) {
-            $listUrl = "http://onionsnjajzkhm5g.onion/onions.php?format=text";
-        }
+        // What to parse
+        $what = trim($input->getArgument("what"));
+        if($what == "daniel") {
+            $danielUrl = "http://onionsnjajzkhm5g.onion/onions.php?format=text";
 
-        if($listUrl) {
-            if(filter_var($listUrl, FILTER_VALIDATE_URL) !== false) {
-                $result = $this->parser->parseUrl($listUrl);
-                if(!$result["success"]) {
-                    if(isset($result["error"])) {
-                        $output->writeln($result["error"]);
-                    }
-                    return;
-                }
-
-                foreach($result["onion-hashes"] as $hash) {
-                    $hashes[] = $hash;
-
-                    $onion = $this->parser->getOnionForHash($hash);
-                    if($onion) {
-                        $urls[] = $onion->getUrl();
-                        $parseUrls[] = [
-                            "url" => $onion->getUrl(),
-                            "depth" => 0
-                        ];
-                    }
-                }
-
-                if($followDepth > 0) {
-                    foreach($result["onion-urls"] as $url) {
-                        if(!in_array($url, $urls)) {
-                            $urls[] = $url;
-                            $parseUrls[] = [
-                                "url" => $url,
-                                "depth" => 0
-                            ];
-                        }
-                    }
-                }
+            $resource = $this->parser->getResourceForUrl($danielUrl);
+            if($resource) {
+                $urls[] = $resource->getUrl();
+                $parseUrls[] = [
+                    "url" => $resource->getUrl(),
+                    "depth" => -1
+                ];
             } else {
-                $output->writeln("Invalid URL"); return;
-            }
-        } else {
-            // What to parse
-            $whatParam = $input->getArgument("what");
-            if(in_array($whatParam, ["resource", "resources", "r", "urls", "u"])) {
-                $what = "resources";
-            } elseif(in_array($whatParam, ["onion", "onions", "o"]) || $whatParam === null) {
-                $what = "onions";
-            } else {
-                $output->writeln("Unknown value for argument \"what\"");
+                $output->writeln("Problem with Daniel URL");
                 return;
             }
+        } elseif(filter_var($what, FILTER_VALIDATE_URL) !== false) {
+            $resource = $this->parser->getResourceForUrl($what);
+            if($resource) {
+                $urls[] = $resource->getUrl();
+                $parseUrls[] = [
+                    "url" => $resource->getUrl(),
+                    "depth" => 0
+                ];
+            } else {
+                $output->writeln("Invalid onion URL");
+                return;
+            }
+        } elseif(in_array($what, ["resource", "resources", "r", "urls", "u"])) {
+            $qb = $em->getRepository("AppBundle:Resource")->createQueryBuilder("r")
+                ->leftJoin("r.onion", "o")
+                ->orderBy("r.url", "ASC");
 
-            if($what == "resources") {
-                $qb = $em->getRepository("AppBundle:Resource")->createQueryBuilder("r")
-                    ->leftJoin("r.onion", "o")
-                    ->orderBy("r.url", "ASC");
+            if($filter == "seen") {
+                $qb->where("r.dateFirstSeen IS NOT NULL");
+            } elseif($filter == "unseen") {
+                $qb->where("r.dateFirstSeen IS NULL");
+            } elseif($filter == "unchecked") {
+                $qb->where("r.dateChecked IS NULL");
+            }
 
-                if($filter == "seen") {
-                    $qb->where("r.dateFirstSeen IS NOT NULL");
-                } elseif($filter == "unseen") {
-                    $qb->where("r.dateFirstSeen IS NULL");
-                } elseif($filter == "unchecked") {
-                    $qb->where("r.dateChecked IS NULL");
-                }
+            $dbResources = $qb->getQuery()->getResult();
 
-                $dbResources = $qb->getQuery()->getResult();
-
-                foreach($dbResources as $resource) {
-                    $urls[] = $resource->getUrl();
-                    $parseUrls[] = [
-                        "url" => $resource->getUrl(),
-                        "depth" => 0
-                    ];
-                    if($resource->getOnion()) {
-                        $onionHash = $resource->getOnion()->getHash();
-                        if(!in_array($onionHash, $hashes)) {
-                            $hashes[] = $onionHash;
-                        }
+            foreach($dbResources as $resource) {
+                $urls[] = $resource->getUrl();
+                $parseUrls[] = [
+                    "url" => $resource->getUrl(),
+                    "depth" => 0
+                ];
+                if($resource->getOnion()) {
+                    $onionHash = $resource->getOnion()->getHash();
+                    if(!in_array($onionHash, $hashes)) {
+                        $hashes[] = $onionHash;
                     }
                 }
-            } else {
-                $qb = $em->getRepository("AppBundle:Onion")->createQueryBuilder("o")
-                    ->leftJoin("o.resource", "r")
-                    ->orderBy("o.hash", "ASC");
-
-                if($filter == "seen") {
-                    $qb->where("r.dateFirstSeen IS NOT NULL");
-                } elseif($filter == "unseen") {
-                    $qb->where("r.dateFirstSeen IS NULL");
-                } elseif($filter == "unchecked") {
-                    $qb->where("r.dateChecked IS NULL");
-                }
-                
-                $dbOnions = $qb->getQuery()->getResult();
-
-                foreach($dbOnions as $onion) {
-                    $hashes[] = $onion->getHash();
-                    $urls[] = $onion->getUrl();
-                    $parseUrls[] = [
-                        "url" => $onion->getUrl(),
-                        "depth" => 0
-                    ];
-                }
             }
+        } elseif(in_array($what, ["onion", "onions", "o", "", null])) {
+            $qb = $em->getRepository("AppBundle:Onion")->createQueryBuilder("o")
+                ->leftJoin("o.resource", "r")
+                ->orderBy("o.hash", "ASC");
+
+            if($filter == "seen") {
+                $qb->where("r.dateFirstSeen IS NOT NULL");
+            } elseif($filter == "unseen") {
+                $qb->where("r.dateFirstSeen IS NULL");
+            } elseif($filter == "unchecked") {
+                $qb->where("r.dateChecked IS NULL");
+            }
+            
+            $dbOnions = $qb->getQuery()->getResult();
+
+            foreach($dbOnions as $onion) {
+                $hashes[] = $onion->getHash();
+                $urls[] = $onion->getUrl();
+                $parseUrls[] = [
+                    "url" => $onion->getUrl(),
+                    "depth" => 0
+                ];
+            }
+        } else {
+            $output->writeln("Unknown value for argument \"what\"");
+            return;
         }
 
         if(count($parseUrls) == 0) {
-            if($followDepth > 0) {
+            if($maxDepth > 0) {
                 $output->writeln("No hash or url found");
             } else {
                 $output->writeln("No hash found");
@@ -239,7 +213,7 @@ class CheckCommand extends ContainerAwareCommand {
             }
 
             $newDepth = $dataUrl["depth"] + 1;
-            if($newDepth <= $followDepth) {
+            if($newDepth <= $maxDepth) {
                 foreach($result["onion-urls"] as $foundUrl) {
                     if(!in_array($foundUrl, $urls)) {
                         $urls[] = $foundUrl;
