@@ -2,6 +2,18 @@ homepage:
     path: /
     defaults: { _controller: AppBundle:Default:index }
 
+onions:
+    path: /onions
+    defaults: { _controller: AppBundle:Default:onions }
+
+resources:
+    path: /urls
+    defaults: { _controller: AppBundle:Default:resources }
+
 check_onion:
-    path: /check/{hash}
+    path: /check/onion/{hash}
     defaults: { _controller: AppBundle:Default:checkOnion }
+
+check_resource:
+    path: /check/url/{id}
+    defaults: { _controller: AppBundle:Default:checkResource }
