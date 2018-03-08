@@ -133,7 +133,7 @@ class Parser {
     public function isOnionUrl($url, $returnHash = false) {
         $hostname = parse_url($url, PHP_URL_HOST);
 
-        if($hostname !== false && preg_match('#([a-z2-7]{16})\.onion$#i', $hostname, $match)) {
+        if($hostname !== false && preg_match('#([a-z2-7]{16,56})\.onion$#i', $hostname, $match)) {
             return $returnHash ? $match[1] : true;
         }
 
