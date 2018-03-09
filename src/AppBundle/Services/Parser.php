@@ -24,7 +24,7 @@ class Parser {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
-            CURLOPT_CONNECTTIMEOUT => 20,
+            CURLOPT_CONNECTTIMEOUT => 15,
             CURLOPT_TIMEOUT => 30
         ));
 

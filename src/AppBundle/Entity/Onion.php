@@ -22,7 +22,7 @@ class Onion
     }
 
     public function getUrl($ssl = false) {
-        return "http".($ssl ? 's' : '')."://".$this->hash.".onion/";
+        return "http".($ssl ? 's' : '')."://".$this->hash.".onion";
     }
 
     /**
