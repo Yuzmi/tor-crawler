@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 use AppBundle\Services\Parser;
 
-class CheckCommand extends ContainerAwareCommand {
+class ParseCommand extends ContainerAwareCommand {
 	private $parser;
 
     public function __construct(Parser $parser) {
@@ -21,8 +21,8 @@ class CheckCommand extends ContainerAwareCommand {
 
     protected function configure() {
         $this
-            ->setName('app:check')
-            ->setDescription('Check onion urls')
+            ->setName('app:parse')
+            ->setDescription('Parse onion urls')
             ->addArgument('what', InputArgument::OPTIONAL, 'What do you want to parse ? onions/urls/url')
             ->addOption('shuffle', 's', InputOption::VALUE_NONE, 'Shuffle URLs at the beginning')
             ->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Parsing mode')
