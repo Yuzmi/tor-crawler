@@ -186,27 +186,31 @@ class CheckCommand extends ContainerAwareCommand {
                 continue;
             }
 
+            $newHashes = [];
             foreach($result["onion-hashes"] as $hash) {
                 if(!in_array($hash, $hashes)) {
                     $hashes[] = $hash;
+                    $newHashes[] = $hash;
+                }
+            }
 
-                    $onion = $this->parser->getOnionForHash($hash);
-                    if($onion) {
-                        $onionUrl = $onion->getUrl();
-                        if(!in_array($onionUrl, $urls)) {
-                            $urls[] = $onionUrl;
+            if(!empty($newHashes)) {
+                $onions = $this->parser->getOnionsForHashes($newHashes);
+                foreach($onions as $o) {
+                    $onionUrl = $o->getUrl();
+                    if(!in_array($onionUrl, $urls)) {
+                        $urls[] = $onionUrl;
 
-                            if($mode == "deep") {
-                                array_unshift($parseUrls, [
-                                    "url" => $onionUrl,
-                                    "depth" => 0
-                                ]);
-                            } else {
-                                $parseUrls[] = [
-                                    "url" => $onionUrl,
-                                    "depth" => 0
-                                ];
-                            }
+                        if($mode == "deep") {
+                            array_unshift($parseUrls, [
+                                "url" => $onionUrl,
+                                "depth" => 0
+                            ]);
+                        } else {
+                            $parseUrls[] = [
+                                "url" => $onionUrl,
+                                "depth" => 0
+                            ];
                         }
                     }
                 }
@@ -214,23 +218,28 @@ class CheckCommand extends ContainerAwareCommand {
 
             $newDepth = $dataUrl["depth"] + 1;
             if($newDepth <= $maxDepth) {
-                foreach($result["onion-urls"] as $foundUrl) {
-                    if(!in_array($foundUrl, $urls)) {
-                        $urls[] = $foundUrl;
+                $newUrls = [];
+                foreach($result["onion-urls"] as $url) {
+                    if(!in_array($url, $urls)) {
+                        $urls[] = $url;
+                        $newUrls[] = $url;
+                    }
+                }
 
+                if(!empty($newUrls)) {
+                    $resources = $this->parser->getResourcesForUrls($newUrls);
+                    foreach($resources as $r) {
                         if($mode == "deep") {
                             array_unshift($parseUrls, [
-                                "url" => $foundUrl,
+                                "url" => $r->getUrl(),
                                 "depth" => $newDepth
                             ]);
                         } else {
                             $parseUrls[] = [
-                                "url" => $foundUrl,
+                                "url" => $r->getUrl(),
                                 "depth" => $newDepth
                             ];
                         }
-
-                        $this->parser->getResourceForUrl($foundUrl);
                     }
                 }
             }

@@ -15,7 +15,7 @@ class Parser {
     }
 
     // https://stackoverflow.com/questions/15445285
-    public function getUrlContent($url, $onion = true) {
+    public function getUrlContent($url, $options = []) {
         $response = array("success" => false);
 
         $ch = curl_init();
@@ -24,16 +24,14 @@ class Parser {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
-            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_CONNECTTIMEOUT => 20,
             CURLOPT_TIMEOUT => 30
         ));
 
-        if($onion) {
-            curl_setopt_array($ch, array(
-                CURLOPT_PROXY => "http://127.0.0.1:9050/",
-                CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME
-            ));
-        }
+        curl_setopt_array($ch, array(
+            CURLOPT_PROXY => "http://127.0.0.1:9050/",
+            CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME
+        ));
 
         $headers = [];
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, 
@@ -130,6 +128,27 @@ class Parser {
         return $onion;
     }
 
+    public function getOnionsForHashes($hashes) {
+        $onions = [];
+
+        $dbOnions = $this->em->getRepository("AppBundle:Onion")->findForHashes($hashes);
+        $dbHashes = [];
+        foreach($dbOnions as $o) {
+            $onions[] = $o;
+            $dbHashes[] = $o->getHash();
+        }
+
+        $unknownHashes = array_diff($hashes, $dbHashes);
+        foreach($unknownHashes as $h) {
+            $onion = $this->getOnionForHash($h);
+            if($onion) {
+                $onions[] = $onion;
+            }
+        }
+
+        return $onions;
+    }
+
     public function isOnionUrl($url, $returnHash = false) {
         $hostname = parse_url($url, PHP_URL_HOST);
 
@@ -196,6 +215,27 @@ class Parser {
         }
 
         return $resource;
+    }
+
+    public function getResourcesForUrls($urls) {
+        $resources = [];
+
+        $dbResources = $this->em->getRepository("AppBundle:Resource")->findForUrls($urls);
+        $dbUrls = [];
+        foreach($dbResources as $r) {
+            $resources[] = $r;
+            $dbUrls[] = $r->getUrl();
+        }
+
+        $unknownUrls = array_diff($urls, $dbUrls);
+        foreach($unknownUrls as $url) {
+            $resource = $this->getResourceForUrl($url);
+            if($resource) {
+                $resources[] = $resource;
+            }
+        }
+
+        return $resources;
     }
 
     public function getResourceForOnion(Onion $onion) {

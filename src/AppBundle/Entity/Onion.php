@@ -4,34 +4,12 @@ namespace AppBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 
-/**
- * Onion
- */
 class Onion
 {
-    /**
-     * @var integer
-     */
     private $id;
-
-    /**
-     * @var string
-     */
     private $hash;
-
-    /**
-     * @var \DateTime
-     */
     private $dateCreated;
-
-    /**
-     * @var \AppBundle\Entity\Resource
-     */
     private $resource;
-
-    /**
-     * @var \Doctrine\Common\Collections\Collection
-     */
     private $resources;
 
     public function __construct() {
@@ -43,8 +21,8 @@ class Onion
         return $this->hash.".onion";
     }
 
-    public function getUrl($https = false) {
-        return "http".($https ? 's' : '')."://".$this->hash.".onion/";
+    public function getUrl($ssl = false) {
+        return "http".($ssl ? 's' : '')."://".$this->hash.".onion/";
     }
 
     /**
