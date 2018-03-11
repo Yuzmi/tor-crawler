@@ -26,11 +26,17 @@ class FixCommand extends ContainerAwareCommand {
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
 
+        $i = 0;
         $onions = $em->getRepository("AppBundle:Onion")->findAll();
         foreach($onions as $o) {
             if($o->getResource() && $o->getResource()->getUrl() != $o->getUrl()) {
                 $o->setResource(null);
                 $em->persist($o);
+
+                $i++;
+                if($i == 500) {
+                    $em->flush();
+                }
             }
         }
 
