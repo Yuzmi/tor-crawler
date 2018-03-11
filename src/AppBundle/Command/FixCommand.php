@@ -29,11 +29,8 @@ class FixCommand extends ContainerAwareCommand {
         $onions = $em->getRepository("AppBundle:Onion")->findAll();
         foreach($onions as $o) {
             if($o->getResource() && $o->getResource()->getUrl() != $o->getUrl()) {
-                $resource = $this->parser->getResourceForUrl($o->getUrl());
-                if($resource) {
-                    $o->setResource($resource);
-                    $em->persist($o);
-                }
+                $o->setResource(null);
+                $em->persist($o);
             }
         }
 
