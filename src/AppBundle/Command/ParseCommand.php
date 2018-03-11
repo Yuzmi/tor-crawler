@@ -28,6 +28,7 @@ class ParseCommand extends ContainerAwareCommand {
             ->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Parsing mode')
             ->addOption('depth', 'd', InputOption::VALUE_REQUIRED, 'Depth to follow links')
             ->addOption('filter', 'f', InputOption::VALUE_REQUIRED, 'Which onions do you want to parse ? all/seen/unseen/unchecked')
+            ->addOption("order", "o", InputOption::VALUE_REQUIRED, "How do you sort what you parse ? name/unchecked")
         ;
     }
 
@@ -47,11 +48,11 @@ class ParseCommand extends ContainerAwareCommand {
         } elseif(in_array($filterParam, ["all", null, false])) {
             $filter = "all";
         } else {
-            $output->writeln("Unknown value for parameter \"filter\"");
+            $output->writeln("Unknown value for option \"filter\"");
             return;
         }
 
-        // Parsing mode
+        // Mode
         $modeParam = $input->getOption("mode");
         if(in_array($modeParam, ["deep", "d"])) {
             $mode = "deep";
@@ -60,7 +61,18 @@ class ParseCommand extends ContainerAwareCommand {
         } elseif(in_array($modeParam, ["wide", "w", null, false])) {
             $mode = "wide";
         } else {
-            $output->writeln("Unknown value for parameter \"mode\"");
+            $output->writeln("Unknown value for option \"mode\"");
+            return;
+        }
+
+        // Order
+        $orderParam = $input->getOption("order");
+        if($orderParam == "unchecked") {
+            $order = "unchecked";
+        } elseif(in_array($orderParam, ["name", null, false])) {
+            $order = "name";
+        } else {
+            $output->writeln("Unknown value for option \"order\"");
             return;
         }
 
@@ -98,8 +110,7 @@ class ParseCommand extends ContainerAwareCommand {
             }
         } elseif(in_array($what, ["resource", "resources", "r", "urls", "u"])) {
             $qb = $em->getRepository("AppBundle:Resource")->createQueryBuilder("r")
-                ->leftJoin("r.onion", "o")
-                ->orderBy("r.url", "ASC");
+                ->leftJoin("r.onion", "o");
 
             if($filter == "seen") {
                 $qb->where("r.dateFirstSeen IS NOT NULL");
@@ -107,6 +118,12 @@ class ParseCommand extends ContainerAwareCommand {
                 $qb->where("r.dateFirstSeen IS NULL");
             } elseif($filter == "unchecked") {
                 $qb->where("r.dateChecked IS NULL");
+            }
+
+            if($order == "unchecked") {
+                $qb->orderBy("r.dateChecked", "ASC");
+            } else {
+                $qb->orderBy("r.url", "ASC");
             }
 
             $dbResources = $qb->getQuery()->getResult();
@@ -126,8 +143,7 @@ class ParseCommand extends ContainerAwareCommand {
             }
         } elseif(in_array($what, ["onion", "onions", "o", "", null])) {
             $qb = $em->getRepository("AppBundle:Onion")->createQueryBuilder("o")
-                ->leftJoin("o.resource", "r")
-                ->orderBy("o.hash", "ASC");
+                ->leftJoin("o.resource", "r");
 
             if($filter == "seen") {
                 $qb->where("r.dateFirstSeen IS NOT NULL");
@@ -135,6 +151,12 @@ class ParseCommand extends ContainerAwareCommand {
                 $qb->where("r.dateFirstSeen IS NULL");
             } elseif($filter == "unchecked") {
                 $qb->where("r.dateChecked IS NULL");
+            }
+
+            if($order == "unchecked") {
+                $qb->orderBy("r.dateChecked", "ASC");
+            } else {
+                $qb->orderBy("o.hash", "ASC");
             }
             
             $dbOnions = $qb->getQuery()->getResult();
@@ -148,7 +170,7 @@ class ParseCommand extends ContainerAwareCommand {
                 ];
             }
         } else {
-            $output->writeln("Unknown value for argument \"what\"");
+            $output->writeln("Invalid parameter");
             return;
         }
 
