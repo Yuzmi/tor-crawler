@@ -9,6 +9,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
+use AppBundle\Entity\Onion;
+use AppBundle\Entity\Resource;
 use AppBundle\Services\Parser;
 
 class ParseCommand extends ContainerAwareCommand {
@@ -21,20 +23,23 @@ class ParseCommand extends ContainerAwareCommand {
 
     protected function configure() {
         $this
-            ->setName('app:parse')
-            ->setDescription('Parse onion urls')
-            ->addArgument('what', InputArgument::OPTIONAL, 'What do you want to parse ? onions/urls/url')
-            ->addOption('shuffle', 's', InputOption::VALUE_NONE, 'Shuffle URLs at the beginning')
-            ->addOption('mode', 'm', InputOption::VALUE_REQUIRED, 'Parsing mode')
-            ->addOption('depth', 'd', InputOption::VALUE_REQUIRED, 'Depth to follow links')
-            ->addOption('filter', 'f', InputOption::VALUE_REQUIRED, 'Which onions do you want to parse ? all/seen/unseen/unchecked')
+            ->setName("app:parse")
+            ->setDescription("Parse onion urls")
+            ->addArgument("what", InputArgument::OPTIONAL, "What do you want to parse ? onions/urls/url")
+            ->addOption("mode", "m", InputOption::VALUE_REQUIRED, "Parsing mode")
+            ->addOption("depth", "d", InputOption::VALUE_REQUIRED, "Depth to follow links")
+            ->addOption("filter", "f", InputOption::VALUE_REQUIRED, "Which onions do you want to parse ? all/seen/unseen/unchecked")
             ->addOption("order", "o", InputOption::VALUE_REQUIRED, "How do you sort what you parse ? name/unchecked")
+            ->addOption("no-discover", null, InputOption::VALUE_NONE, "Don't parse other onions")
+            ->addOption("shuffle", null, InputOption::VALUE_NONE, "Shuffle URLs at the beginning")
+            ->addOption("smart", "s", InputOption::VALUE_NONE, "Let's (try to) be smart")
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
 
+        $discover = $input->getOption("no-discover") ? false : true;
         $maxDepth = max(intval($input->getOption("depth")), 0);
 
         // Filter
@@ -130,15 +135,12 @@ class ParseCommand extends ContainerAwareCommand {
 
             foreach($dbResources as $resource) {
                 $urls[] = $resource->getUrl();
-                $parseUrls[] = [
-                    "url" => $resource->getUrl(),
-                    "depth" => 0
-                ];
-                if($resource->getOnion()) {
-                    $onionHash = $resource->getOnion()->getHash();
-                    if(!in_array($onionHash, $hashes)) {
-                        $hashes[] = $onionHash;
-                    }
+
+                if(!$input->getOption("smart") || $this->shouldBeParsed($resource)) {
+                    $parseUrls[] = [
+                        "url" => $resource->getUrl(),
+                        "depth" => 0
+                    ];
                 }
             }
         } elseif(in_array($what, ["onion", "onions", "o", "", null])) {
@@ -164,10 +166,13 @@ class ParseCommand extends ContainerAwareCommand {
             foreach($dbOnions as $onion) {
                 $hashes[] = $onion->getHash();
                 $urls[] = $onion->getUrl();
-                $parseUrls[] = [
-                    "url" => $onion->getUrl(),
-                    "depth" => 0
-                ];
+                
+                if(!$input->getOption("smart") || $this->shouldBeParsed($onion)) {
+                    $parseUrls[] = [
+                        "url" => $onion->getUrl(),
+                        "depth" => 0
+                    ];
+                }
             }
         } else {
             $output->writeln("Invalid parameter");
@@ -223,16 +228,18 @@ class ParseCommand extends ContainerAwareCommand {
                     if(!in_array($onionUrl, $urls)) {
                         $urls[] = $onionUrl;
 
-                        if($mode == "deep") {
-                            array_unshift($parseUrls, [
-                                "url" => $onionUrl,
-                                "depth" => 0
-                            ]);
-                        } else {
-                            $parseUrls[] = [
-                                "url" => $onionUrl,
-                                "depth" => 0
-                            ];
+                        if($discover) {
+                            if($mode == "deep") {
+                                array_unshift($parseUrls, [
+                                    "url" => $onionUrl,
+                                    "depth" => 0
+                                ]);
+                            } else {
+                                $parseUrls[] = [
+                                    "url" => $onionUrl,
+                                    "depth" => 0
+                                ];
+                            }
                         }
                     }
                 }
@@ -268,5 +275,37 @@ class ParseCommand extends ContainerAwareCommand {
 
             $output->writeln(" : OK : ".round($result["duration"])."s".($result["title"] ? " : ".$result["title"] : ""));
         }
+    }
+
+    private function shouldBeParsed($element) {
+        $now = new \DateTime();
+
+        if($element instanceof Onion) {
+            $resource = $element->getResource();
+        } elseif($element instanceof Resource) {
+            $resource = $element;
+        } else {
+            return false;
+        }
+
+        if(!$resource || !$resource->getDateChecked()) {
+            return true;
+        }
+
+        if($resource->getCountErrors() < 5) {
+            return true;
+        }
+
+        if($resource->getDateLastSeen() > new \DateTime("7 days ago")) {
+            return true;
+        }
+
+        $sevenDaysOld = clone $resource->getDateCreated();
+        $sevenDaysOld->add(date_interval_create_from_date_string('7 days'));
+        if($now < $sevenDaysOld) {
+            return true;
+        }
+
+        return false;
     }
 }
