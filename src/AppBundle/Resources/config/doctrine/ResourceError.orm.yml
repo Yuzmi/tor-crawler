@@ -21,5 +21,5 @@ AppBundle\Entity\ResourceError:
             targetEntity: Resource
             inversedBy: errors
     uniqueConstraints:
-        url_hash_idx:
+        resourcerror_label_resource_idx:
             columns: [ label, resource_id ]
