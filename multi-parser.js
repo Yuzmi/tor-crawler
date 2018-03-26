@@ -1,12 +1,17 @@
 var cmd = require("node-cmd");
 
-var urls = ["http://tt3j2x4kzdwaaa46.onion/", "http://dceifbk6qw55xmxd.onion/", "http://z52pujymseieakyk.onion/"];
+var urls = [
+	/*"http://truegold2fbxij75.onion/", 
+	"http://3xf422xsvz27xb6r.onion/", 
+	"http://mega3j3v6lxlyko5.onion/"*/
+];
 
-var countPerRequest = 1000;
+var countParallel = 4;
+var countPerRequest = 100;
 var iRequest = 0;
 
 function getUrls(callback) {
-	var command = "php bin/console app:get:urls "+countPerRequest;
+	var command = "php bin/console app:get:urls "+countPerRequest+" "+(countPerRequest*iRequest);
 	cmd.get(command, function(err, data, stderr) {
 		if (!err) {
 			urls = JSON.parse(data);
@@ -20,25 +25,30 @@ function getUrls(callback) {
 	});
 }
 
-function parseUrls(i) {
-	parseNextUrl(i);
-	//parseNextUrl(i);
-	//parseNextUrl(i);
+function getContents(i) {
+	for(var a=0;a<countParallel;a++) {
+		getNextContent(i);
+	}
 }
 
-function parseNextUrl(i) {
+function getNextContent(i) {
 	if(iRequest == i) {
 		if(urls.length > 0) {
 			var url = urls.shift();
-			parseUrl(url, parseNextUrl(i));
+			getContent(url, function() {
+				getNextContent(i);
+			});
 		} else {
-			getUrls(parseUrls);
+			iRequest++;
+			getUrls(function() {
+				getContents(iRequest);
+			});
 		}
 	}
 }
 
-function parseUrl(url, callback) {
-	var command = "php bin/console app:parse:url "+url;
+function getContent(url, callback) {
+	var command = "php bin/console app:parse "+url;
 	cmd.get(command, function(err, data, stderr) {
 		if (!err) {
            console.log(rmNewline(data));
@@ -54,42 +64,6 @@ function rmNewline(str) {
 	return str.replace(/\r?\n|\r/g, " ");
 }
 
-//parseUrl("http://hwikis25ilfucqzh.onion/");
-
-/*getUrls(function() {
-	parseUrls(iRequest);
-});*/
-parseUrls(iRequest);
-
-/*
-// https://github.com/mattcg/socks5-http-client
-
-var url = require('url');
-var shttp = require('socks5-http-client');
-
-var options = url.parse(process.argv[2]);
-
-options.socksPort = 9050; // Tor default port.
-
-var req = shttp.get(options, function(res) {
-	res.setEncoding('utf8');
-
-	res.on('readable', function() {
-		var data = res.read();
-
-		// Check for the end of stream signal.
-		if (null === data) {
-			process.stdout.write('\n');
-			return;
-		}
-
-		process.stdout.write(data);
-	});
+getUrls(function() {
+	getContents(iRequest);
 });
-
-req.on('error', function(e) {
-	console.error('Problem with request: ' + e.message);
-});
-
-req.end();
-*/

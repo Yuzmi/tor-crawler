@@ -9,8 +9,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
-use AppBundle\Entity\Onion;
-use AppBundle\Entity\Resource;
 use AppBundle\Services\Parser;
 
 class ParseCommand extends ContainerAwareCommand {
@@ -30,7 +28,7 @@ class ParseCommand extends ContainerAwareCommand {
             ->addOption("depth", "d", InputOption::VALUE_REQUIRED, "Depth to follow links")
             ->addOption("filter", "f", InputOption::VALUE_REQUIRED, "Which onions do you want to parse ? all/seen/unseen/unchecked")
             ->addOption("order", "o", InputOption::VALUE_REQUIRED, "How do you sort what you parse ? name/unchecked")
-            ->addOption("no-discover", null, InputOption::VALUE_NONE, "Don't parse other onions")
+            ->addOption("discover", null, InputOption::VALUE_NONE, "Parse found onions")
             ->addOption("shuffle", null, InputOption::VALUE_NONE, "Shuffle URLs at the beginning")
             ->addOption("smart", "s", InputOption::VALUE_NONE, "Let's (try to) be smart")
         ;
@@ -39,7 +37,7 @@ class ParseCommand extends ContainerAwareCommand {
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
 
-        $discover = $input->getOption("no-discover") ? false : true;
+        $discover = $input->getOption("discover") ? true : false;
         $maxDepth = max(intval($input->getOption("depth")), 0);
 
         // Filter
@@ -101,7 +99,7 @@ class ParseCommand extends ContainerAwareCommand {
                 $output->writeln("Problem with Daniel URL");
                 return;
             }
-        } elseif(filter_var($what, FILTER_VALIDATE_URL) !== false) {
+        } elseif($this->parser->isOnionUrl($what)) {
             $resource = $this->parser->getResourceForUrl($what);
             if($resource) {
                 $urls[] = $resource->getUrl();
@@ -111,6 +109,18 @@ class ParseCommand extends ContainerAwareCommand {
                 ];
             } else {
                 $output->writeln("Invalid onion URL");
+                return;
+            }
+        } elseif($this->parser->isOnionHash($what)) {
+            $onion = $this->parser->getOnionForHash($what);
+            if($onion) {
+                $urls[] = $onion->getUrl();
+                $parseUrls[] = [
+                    "url" => $onion->getUrl(),
+                    "depth" => 0
+                ];
+            } else {
+                $output->writeln("Invalid onion hash");
                 return;
             }
         } elseif(in_array($what, ["resource", "resources", "r", "urls", "u"])) {
@@ -136,7 +146,7 @@ class ParseCommand extends ContainerAwareCommand {
             foreach($dbResources as $resource) {
                 $urls[] = $resource->getUrl();
 
-                if(!$input->getOption("smart") || $this->shouldBeParsed($resource)) {
+                if(!$input->getOption("smart") || $this->parser->shouldBeParsed($resource)) {
                     $parseUrls[] = [
                         "url" => $resource->getUrl(),
                         "depth" => 0
@@ -167,7 +177,7 @@ class ParseCommand extends ContainerAwareCommand {
                 $hashes[] = $onion->getHash();
                 $urls[] = $onion->getUrl();
                 
-                if(!$input->getOption("smart") || $this->shouldBeParsed($onion)) {
+                if(!$input->getOption("smart") || $this->parser->shouldBeParsed($onion)) {
                     $parseUrls[] = [
                         "url" => $onion->getUrl(),
                         "depth" => 0
@@ -180,11 +190,7 @@ class ParseCommand extends ContainerAwareCommand {
         }
 
         if(count($parseUrls) == 0) {
-            if($maxDepth > 0) {
-                $output->writeln("No hash or url found");
-            } else {
-                $output->writeln("No hash found");
-            }
+            $output->writeln("Nothing to parse");
             return;
         }
 
@@ -275,37 +281,5 @@ class ParseCommand extends ContainerAwareCommand {
 
             $output->writeln(" : OK : ".round($result["duration"])."s".($result["title"] ? " : ".$result["title"] : ""));
         }
-    }
-
-    private function shouldBeParsed($element) {
-        $now = new \DateTime();
-
-        if($element instanceof Onion) {
-            $resource = $element->getResource();
-        } elseif($element instanceof Resource) {
-            $resource = $element;
-        } else {
-            return false;
-        }
-
-        if(!$resource || !$resource->getDateChecked()) {
-            return true;
-        }
-
-        if($resource->getCountErrors() < 5) {
-            return true;
-        }
-
-        if($resource->getDateLastSeen() > new \DateTime("7 days ago")) {
-            return true;
-        }
-
-        $sevenDaysOld = clone $resource->getDateCreated();
-        $sevenDaysOld->add(date_interval_create_from_date_string('7 days'));
-        if($now < $sevenDaysOld) {
-            return true;
-        }
-
-        return false;
     }
 }

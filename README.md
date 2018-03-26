@@ -26,6 +26,15 @@ Command
 --------
 
 ```
+# Parse onions in database
+php bin/console app:parse
+
 # Parse onions in database and discover new ones
-php bin/console app:discover
+php bin/console app:parse --discover
+
+# Parse URL
+php bin/console app:parse http://xxxxxxxxxxxxxxxx.onion
+
+# Onions in JSON
+php bin/console app:get:onions
 ```

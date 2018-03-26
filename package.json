@@ -3,6 +3,8 @@
 	"description": "Tor crawler",
 	"version": "0.0.1",
 	"dependencies": {
-		"node-cmd": "*"
+		"node-cmd": "*",
+		"request": "*",
+		"socks5-http-client": "*"
 	}
 }

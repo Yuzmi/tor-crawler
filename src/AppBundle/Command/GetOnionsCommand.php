@@ -7,19 +7,22 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
-class GetUrlsCommand extends ContainerAwareCommand {
+class GetOnionsCommand extends ContainerAwareCommand {
     protected function configure() {
         $this
-            ->setName('app:get:urls')
-            ->setDescription('Get URLs')
+            ->setName('app:get:onions')
+            ->setDescription('Get onions')
             ->addArgument('quantity', InputArgument::OPTIONAL, 'Quantity')
             ->addArgument('offset', InputArgument::OPTIONAL, 'Offset')
+            ->addOption("smart", "s", InputOption::VALUE_NONE)
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
         $em = $this->getContainer()->get('doctrine')->getManager();
+        $parser = $this->getContainer()->get("parser");
 
         $qb = $em->getRepository("AppBundle:Onion")
             ->createQueryBuilder("o")
@@ -37,13 +40,15 @@ class GetUrlsCommand extends ContainerAwareCommand {
         
         $onions = $qb->getQuery()->getResult();
 
-        $urls = [];
+        $listOnions = [];
         foreach($onions as $o) {
-            $urls[] = $o->getUrl();
+            if(!$input->getOption("smart") || $parser->shouldBeParsed($o)) {
+                $listOnions[] = $o->getHash();
+            }
         }
 
-        $json_urls = json_encode($urls);
+        $jsonOnions = json_encode($listOnions);
 
-        $output->writeln($json_urls);
+        $output->writeln($jsonOnions);
     }
 }

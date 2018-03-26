@@ -149,6 +149,10 @@ class Parser {
         return $onions;
     }
 
+    public function isOnionHash($hash) {
+        return preg_match("#^[a-z2-7]{16,56}$#i", $hash);
+    }
+
     public function isOnionUrl($url, $returnHash = false) {
         $hostname = parse_url($url, PHP_URL_HOST);
 
@@ -287,7 +291,7 @@ class Parser {
             $resource->setCountErrors(0);
         } else {
             // Erreur
-            $error = mb_substr($result["error"], 0, 191);
+            $error = isset($result["error"]) ? mb_substr($result["error"], 0, 191) : null;
             $resource->setLastError($error);
 
             if($resource->getDateError() < $date) {
@@ -304,8 +308,12 @@ class Parser {
         return $result;
     }
 
-    public function parseResource(Resource $resource) {
-        $result = $this->getUrlContent($resource->getUrl());
+    public function parseResource(Resource $resource, $options = []) {
+        if(isset($options["result"])) {
+            $result = $options["result"];
+        } else {
+            $result = $this->getUrlContent($resource->getUrl());
+        }
 
         $result = $this->saveResultForResource($result, $resource);
 
@@ -323,10 +331,10 @@ class Parser {
         return $result;
     }
 
-    public function parseOnion(Onion $onion) {
+    public function parseOnion(Onion $onion, $options = []) {
         $resource = $this->getResourceForOnion($onion);
 
-        $result = $this->parseResource($resource);
+        $result = $this->parseResource($resource, $options);
 
         return $result;
     }
@@ -407,5 +415,37 @@ class Parser {
         }
 
         return $results;
+    }
+
+    public function shouldBeParsed($element) {
+        $now = new \DateTime();
+
+        if($element instanceof Onion) {
+            $resource = $element->getResource();
+        } elseif($element instanceof Resource) {
+            $resource = $element;
+        } else {
+            return false;
+        }
+
+        if(!$resource || !$resource->getDateChecked()) {
+            return true;
+        }
+
+        if($resource->getCountErrors() < 5) {
+            return true;
+        }
+
+        if($resource->getDateLastSeen() > new \DateTime("7 days ago")) {
+            return true;
+        }
+
+        $sevenDaysOld = clone $resource->getDateCreated();
+        $sevenDaysOld->add(date_interval_create_from_date_string('7 days'));
+        if($now < $sevenDaysOld) {
+            return true;
+        }
+
+        return false;
     }
 }
