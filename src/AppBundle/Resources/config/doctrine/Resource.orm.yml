@@ -55,7 +55,7 @@ AppBundle\Entity\Resource:
         errors:
             targetEntity: ResourceError
             mappedBy: resource
-            cascade: ["persist"]
+            cascade: ["persist", "remove"]
     uniqueConstraints:
         url_hash_idx:
             columns: [ url_hash ]

@@ -12,7 +12,7 @@ var iChunk = 0;
 var loop = false;
 var looped = 0;
 var onions = [];
-var timeout = 30000;
+var timeout = 60000;
 
 // Arguments
 var argv = require('minimist')(process.argv.slice(2), { boolean: true });
