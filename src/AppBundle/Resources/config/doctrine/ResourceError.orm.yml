@@ -9,6 +9,7 @@ AppBundle\Entity\ResourceError:
     fields:
         label:
             type: string
+            length: 191
         count:
             type: integer
         dateCreated:
