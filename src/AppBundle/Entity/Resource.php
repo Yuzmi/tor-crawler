@@ -2,6 +2,8 @@
 
 namespace AppBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 class Resource
 {
     private $id;
@@ -16,8 +18,10 @@ class Resource
     private $dateLastSeen;
     private $dateError;
     private $onion;
+    private $errors;
 
     public function __construct($url = null) {
+        $this->errors = new ArrayCollection();
         $this->dateCreated = new \DateTime();
         $this->totalSuccess = 0;
         $this->countErrors = 0;
@@ -332,5 +336,39 @@ class Resource
     public function getTotalSuccess()
     {
         return $this->totalSuccess;
+    }
+
+    /**
+     * Add error
+     *
+     * @param \AppBundle\Entity\ResourceError $error
+     *
+     * @return Resource
+     */
+    public function addError(\AppBundle\Entity\ResourceError $error)
+    {
+        $this->errors[] = $error;
+
+        return $this;
+    }
+
+    /**
+     * Remove error
+     *
+     * @param \AppBundle\Entity\ResourceError $error
+     */
+    public function removeError(\AppBundle\Entity\ResourceError $error)
+    {
+        $this->errors->removeElement($error);
+    }
+
+    /**
+     * Get errors
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getErrors()
+    {
+        return $this->errors;
     }
 }

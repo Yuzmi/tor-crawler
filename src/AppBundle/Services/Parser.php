@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 use AppBundle\Entity\Onion;
 use AppBundle\Entity\Resource;
+use AppBundle\Entity\ResourceError;
 
 class Parser {
     private $em;
@@ -266,20 +267,20 @@ class Parser {
         $resource->setDateChecked($date);
 
         if($result["success"]) {
-            // Titre
+            // Title
             $result["title"] = $this->getTitleFromHtml($result["content"]);
             if(!empty($result["title"])) {
                 $title = mb_substr($result["title"], 0, 191);
                 $resource->setTitle($title);
             }
 
-            // Taille du contenu
+            // Content size
             $result["length"] = mb_strlen($result["content"]);
             if($result["length"]) {
                 $resource->setLastLength($result["length"]);
             }
 
-            // Données supplémentaires
+            // Other data
             $result["onion-hashes"] = $this->getOnionHashesFromContent($result["content"]);
             $result["onion-urls"] = $this->getOnionUrlsFromHtml($result["content"]);
             
@@ -290,7 +291,7 @@ class Parser {
             $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
             $resource->setCountErrors(0);
         } else {
-            // Erreur
+            // Error
             $error = isset($result["error"]) ? mb_substr($result["error"], 0, 191) : null;
             $resource->setLastError($error);
 
@@ -299,6 +300,28 @@ class Parser {
             }
 
             $resource->setCountErrors($resource->getCountErrors() + 1);
+
+            // ResourceError
+            $rError = $this->em->getRepository("AppBundle:ResourceError")->findOneBy([
+                "label" => $error,
+                "resource" => $resource
+            ]);
+
+            $newError = false;
+            if(!$rError) {
+                $rError = new ResourceError();
+                $rError->setLabel($error);
+                $rError->setResource($resource);
+                $resource->addError($rError);
+                $newError = true;
+            }
+
+            $rError->setCount($rError->getCount() + 1);
+            $rError->setDateLastSeen(new \DateTime());
+
+            if(!$newError) {
+                $this->em->persist($rError);
+            }
         }
 
         // Enregistrement
@@ -432,7 +455,7 @@ class Parser {
             return true;
         }
 
-        if($resource->getCountErrors() < 5) {
+        if($resource->getCountErrors() < 10) {
             return true;
         }
 

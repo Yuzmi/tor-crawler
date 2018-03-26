@@ -1,0 +1,25 @@
+AppBundle\Entity\ResourceError:
+    type: entity
+    table: resource_error
+    repositoryClass: AppBundle\Repository\ResourceErrorRepository
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        label:
+            type: string
+        count:
+            type: integer
+        dateCreated:
+            type: datetime
+        dateLastSeen:
+            type: datetime
+            nullable: true
+    manyToOne:
+        resource:
+            targetEntity: Resource
+            inversedBy: errors
+    uniqueConstraints:
+        url_hash_idx:
+            columns: [ label, resource_id ]

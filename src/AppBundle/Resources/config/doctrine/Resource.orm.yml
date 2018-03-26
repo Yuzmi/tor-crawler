@@ -51,6 +51,11 @@ AppBundle\Entity\Resource:
             joinColumn:
                 name: onion_id
                 referencedColumnName: id
+    oneToMany:
+        errors:
+            targetEntity: ResourceError
+            mappedBy: resource
+            cascade: ["persist"]
     uniqueConstraints:
         url_hash_idx:
             columns: [ url_hash ]
