@@ -8,12 +8,12 @@
 !/var/cache
 /var/cache/*
 !var/cache/.gitkeep
+!var/files
+/var/files/*
+!var/files/.gitkeep
 !/var/logs
 /var/logs/*
 !var/logs/.gitkeep
-!var/onions
-/var/onions/*
-!var/onions/.gitkeep
 !/var/sessions
 /var/sessions/*
 !var/sessions/.gitkeep

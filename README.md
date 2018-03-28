@@ -35,6 +35,6 @@ php bin/console app:parse --discover
 # Parse URL
 php bin/console app:parse http://xxxxxxxxxxxxxxxx.onion
 
-# Onions in JSON
-php bin/console app:get:onions
+# Urls in JSON
+php bin/console app:get:urls
 ```

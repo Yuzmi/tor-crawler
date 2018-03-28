@@ -1,23 +1,33 @@
 var Agent = require('socks5-http-client/lib/Agent');
 var cmd = require("node-cmd");
+var crypto = require("crypto");
 var fs = require('fs');
 var request = require('request');
 
 require('events').EventEmitter.prototype._maxListeners = 100;
 
+var chunkSize = 500;
 var counter = 0;
-var countPerChunk = 200;
 var countThreads = 10;
+var filter = null;
 var iChunk = 0;
+var iLoop = 0;
+var iSession = 0;
+var iThread = 0;
 var loop = false;
-var looped = 0;
-var onions = [];
+var loopFirst = false;
+var urls = [];
 var timeout = 60000;
 
 // Arguments
 var argv = require('minimist')(process.argv.slice(2), { boolean: true });
 for(var arg in argv) {
-	if((arg == "l" && argv[arg] == true) || (arg == "loop" && argv[arg] == true)) {
+	if(arg == "f" || arg == "filter") {
+		filter = argv[arg];
+		if(filter == "longchecked") {
+			loopFirst = true;
+		}
+	} else if((arg == "l" && argv[arg] == true) || (arg == "loop" && argv[arg] == true)) {
 		loop = true;
 	} else if(arg == "s" || arg == "threads") {
 		countThreads = argv[arg];
@@ -26,17 +36,29 @@ for(var arg in argv) {
 	}
 }
 
-function getOnions(callback) {
-	var command = "php bin/console app:get:onions "+countPerChunk+" "+(countPerChunk*iChunk);
+var gettingUrls = false;
+function getUrls(callback) {
+	if(gettingUrls) {
+		return;
+	} else {
+		gettingUrls = true;
+	}
+
+	var command = "php bin/console app:get:urls "+chunkSize+" "+(chunkSize*iChunk);
+	if(filter) {
+		command += " -f "+filter;
+	}
+
 	cmd.get(command, function(err, data, stderr) {
+		gettingUrls = false;
 		if (!err) {
-			onions = JSON.parse(data);
-			if(onions.length > 0) {
+			urls = JSON.parse(data);
+			if(urls.length > 0) {
 				if(callback) callback();
-			} else if(loop) {
+			} else if(loop && iChunk > 0) {
 				iChunk = 0;
-				looped++;
-				getOnions(function() {
+				iLoop++;
+				getUrls(function() {
 					if(callback) callback();
 				});
 			}
@@ -46,48 +68,48 @@ function getOnions(callback) {
 	});
 }
 
-function getOnionContents(iC) {
-	for(var j=0;j<countThreads;j++) {
-		setTimeout(function(j) {
-			getNextOnionContent(iC, j);
-		}, j*500, j);
+function getUrlContents(iS) {
+	if(iLoop == 0 || !loopFirst) {
+		for(var j=0;j<countThreads;j++) {
+			setTimeout(function() {
+				iThread++;
+				getNextUrlContent(iS, iThread);
+			}, j*200);
+		}
 	}
 }
 
-function getNextOnionContent(iC, iT) {
-	if(iChunk == iC) {
-		if(onions.length > 0) {
-			var onion = onions.shift();
-			getOnionContent(iC, iT, onion, function() {
-				getNextOnionContent(iC, iT);
+function getNextUrlContent(iS, iT) {
+	if(iSession == iS) {
+		if(urls.length > 0) {
+			var url = urls.shift();
+			getUrlContent(iT, url, function() {
+				getNextUrlContent(iS, iT);
 			});
 		} else {
-			iChunk++;
-			getOnions(function() {
-				getOnionContents(iChunk);
+			iSession++;
+			if(!loopFirst) {
+				iChunk++;
+			}
 
-				var command = "php bin/console app:parse:files";
-				cmd.get(command, function(err, data, stderr) {
-					if(err) {
-						console.log(err);
-					}
-				});
+			getUrls(function() {
+				getUrlContents(iSession);
 			});
 		}
 	}
 }
 
-function getOnionContent(iC, iT, onion, callback) {
+function getUrlContent(iT, url, callback) {
 	var isTimedOut = false;
 	var timeStart = Date.now();
 
 	// Result initialization
 	var result = {
 		"success": false,
-		"onion": onion,
+		"url": url,
 		"content": null,
 		"error": null,
-		"date": new Date().toISOString(),
+		"dateUTC": new Date().toUTCString(),
 		"duration": 0
 	};
 
@@ -95,7 +117,7 @@ function getOnionContent(iC, iT, onion, callback) {
 
 	// Request
 	var r = request({
-		url: "http://"+onion+".onion",
+		url: url,
 		agentClass: Agent,
 		agentOptions: {
 			socksHost: "localhost",
@@ -109,7 +131,7 @@ function getOnionContent(iC, iT, onion, callback) {
 		result.error = errReq ? errReq.toString() : null;
 		result.duration = Math.round((Date.now() - timeStart) / 1000);
 
-		saveOnionResult(iC, iT, onion, result);
+		saveUrlResult(iT, url, result);
 
 		if(callback) callback();
 		return;
@@ -122,28 +144,59 @@ function getOnionContent(iC, iT, onion, callback) {
 		result.error = "Timeout";
 		result.duration = Math.round((Date.now() - timeStart) / 1000);
 
-		saveOnionResult(iC, iT, onion, result);
+		saveUrlResult(iT, url, result);
 
 		if(callback) callback();
 		return;
 	}, timeout);
 }
 
-function saveOnionResult(iC, iT, onion, result) {
-	fs.writeFile("var/onions/"+onion+".json", JSON.stringify(result), function(errFs) {
+function saveUrlResult(iT, url, result) {
+	var filename = hash(url)+".json";
+	fs.writeFile("var/files/"+filename, JSON.stringify(result), function(errFs) {
 		if(errFs) {
 			console.log(errFs);
+		} else {
+			parseFile(filename);
 		}
 	});
 
 	counter++;
 	if(!result.error) {
-		console.log(counter+(looped > 0 ? "/"+(looped + 1) : "")+" - "+(iC + 1)+"-"+(iT + 1)+" - "+onion+" : "+result.duration+"s - OK");
+		console.log("#"+counter+(iLoop > 0 ? "/"+(iLoop + 1) : "")+" - T"+(iT)+" - "+url+" : "+result.duration+"s - OK");
 	} else {
-		console.log(counter+(looped > 0 ? "/"+(looped + 1) : "")+" - "+(iC + 1)+"-"+(iT + 1)+" - "+onion+" : "+result.duration+"s - "+result.error);
+		console.log("#"+counter+(iLoop > 0 ? "/"+(iLoop + 1) : "")+" - T"+(iT)+" - "+url+" : "+result.duration+"s - "+result.error);
 	}
 }
 
-getOnions(function() {
-	getOnionContents(iChunk);
+function hash(data) {
+	return crypto.createHash("sha1").update(data).digest("hex");
+}
+
+function parseFiles(callback) {
+	cmd.get("php bin/console app:parse:files", function(err, data, stderr) {
+		if(err) {
+			console.log(err);
+		}
+
+		if(callback) {
+			callback();
+		}
+	});
+}
+
+function parseFile(file, callback) {
+	cmd.get("php bin/console app:parse:files "+file, function(err, data, stderr) {
+		if(err) {
+			console.log(err);
+		}
+
+		if(callback) {
+			callback();
+		}
+	});
+}
+
+getUrls(function() {
+	getUrlContents(iSession);
 });
