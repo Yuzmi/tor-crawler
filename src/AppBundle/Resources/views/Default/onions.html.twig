@@ -85,9 +85,9 @@
 					{% for o in onions %}
 						<tr class="onion" data-onion="{{ o.id }}">
 							<td class="text-center">
-								<button class="btn btn-default btn-xs more">
-									<i class="fa fa-caret-down"></i>
-								</button>
+								<a class="btn btn-default btn-xs" href="{{ o.url }}" target="_blank" rel="noopener noreferrer">
+									<i class="fa fa-link"></i>
+								</a>
 							</td>
 							<td>{{ o.hash }}</td>
 							<td class="title">{{ o.resource ? o.resource.title }}</td>
@@ -99,24 +99,6 @@
 							</td>
 							<td title="{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d H:i') }}">
 								{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d') : "Never" }}
-							</td>
-						</tr>
-						<tr class="onionDetail-{{ o.id }} hidden">
-							<td class="text-center" colspan="6">
-								<a class="btn btn-default btn-xs" href="{{ o.url }}" target="_blank" rel="noopener noreferrer">
-									<i class="fa fa-link"></i>
-									Direct link
-								</a>
-
-								<a class="btn btn-default btn-xs" href="https://{{ o.hash }}.tor2web.ch/" target="_blank" rel="noopener noreferrer">
-									<i class="fa fa-link"></i>
-									Tor2web
-								</a>
-
-								<a class="btn btn-default btn-xs" href="{{ path('check_onion', {'hash': o.hash}) }}" title="Check">
-									<i class="fa fa-refresh"></i>
-									Check
-								</a>
 							</td>
 						</tr>
 					{% endfor %}
@@ -132,15 +114,4 @@
 			</p>
 		{% endif %}
 	</div>
-{% endblock %}
-
-{% block javascripts %}
-	{{ parent() }}
-	<script>
-		$(document).ready(function() {
-			$(".onion button.more").on("click", function() {
-				$(".onionDetail-"+$(this).closest(".onion").attr("data-onion")).toggleClass("hidden");
-			});
-		});
-	</script>
 {% endblock %}

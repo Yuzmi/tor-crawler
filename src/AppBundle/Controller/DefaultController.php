@@ -5,16 +5,12 @@ namespace AppBundle\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 class DefaultController extends BaseController {
-    public function indexAction() {
-        return $this->redirectToRoute("onions");
-    }
-
     public function onionsAction(Request $request) {
     	$qb = $this->getRepo("Onion")->createQueryBuilder("o")
     		->select("o, r")
     		->leftJoin("o.resource", 'r');
 
-    	$type = $request->query->get("type", "seen");
+    	$type = $request->query->get("type", "all");
     	if($type == "seen") {
     		$qb->andWhere("r.dateFirstSeen IS NOT NULL");
     	} elseif($type == "unseen") {
@@ -59,7 +55,7 @@ class DefaultController extends BaseController {
         $qb = $this->getRepo("Resource")->createQueryBuilder("r")
             ->select("r");
 
-        $type = $request->query->get("type", "seen");
+        $type = $request->query->get("type", "all");
         if($type == "seen") {
             $qb->andWhere("r.dateFirstSeen IS NOT NULL");
         } elseif($type == "unseen") {
