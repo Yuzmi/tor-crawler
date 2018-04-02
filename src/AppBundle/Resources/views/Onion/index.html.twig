@@ -1,0 +1,134 @@
+{% extends "base.html.twig" %}
+
+{% set route = app.request.attributes.get('_route') %}
+{% set routeParams = app.request.attributes.get('_route_params')|merge(app.request.query.all) %}
+
+{% block content %}
+	<h1 class="text-center">
+        <a href="{{ path('onion_index') }}">
+            Onions
+        </a>
+    </h1>
+
+    <br>
+
+    <div class="container">
+		<div class="text-center">
+			<form class="form-inline" method="get" action="{{ path(route, routeParams) }}">
+				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="onion or title" style="min-width:50%;">
+				
+				{% set fields = {
+					'any': "Any",
+					'onion': "Onion",
+					'title': "Title"
+				} %}
+				<select class="form-control" name="qf">
+					{% for key,value in fields %}
+						<option value="{{ key }}" {{ qf == key ? "selected" }}>
+							{{ value }}
+						</option>
+					{% endfor %}
+				</select>
+
+				<button class="btn btn-default" type="submit">Filter</button>
+			</form>
+		</div>
+
+		<br>
+
+		<div class="text-center">
+			{{ onions.totalItemCount }} result{{ onions.totalItemCount > 1 ? "s" }}
+		</div>
+
+		<br>
+
+		{% if onions.count %}
+			<div class="text-center">
+			    {{ knp_pagination_render(onions) }}
+			</div>
+		{% endif %}
+
+		{% set navs = {
+			'all': "All",
+			'seen': "Seen",
+			'unseen': "Never seen"
+		} %}
+		<ul class="nav nav-tabs nav-justified">
+			{% for key,value in navs %}
+				<li {% if type == key %}class="active"{% endif %}>
+					<a href="{{ path(route, routeParams|merge({'type': key})) }}">
+						{{ value }}
+					</a>
+				</li>
+			{% endfor %}
+	    </ul>
+
+	    {% if onions.count %}
+			<div class="table-responsive">
+				<table class="table table-striped table-bordered table-condensed">
+					{% set ths = {
+						'o.hash': "Onion",
+						'r.title': "Title",
+						'o.dateCreated': "Added",
+						'r.dateChecked': "Checked",
+						'r.dateLastSeen': "Seen"
+					} %}
+					<tr>
+						{% for key,value in ths %}
+							<th>
+								{{ knp_pagination_sortable(onions, value, key) }}
+								{% if onions.isSorted(key) %}
+									{% if onions.direction == "asc" %}
+										<i class="fa fa-caret-down"></i>
+									{% elseif onions.direction == "desc" %}
+										<i class="fa fa-caret-up"></i>
+									{% endif %}
+								{% endif %}
+							</th>
+						{% endfor %}
+						<th colspan="2"></th>
+					</tr>
+					{% for o in onions %}
+						<tr class="onion" data-onion="{{ o.id }}">
+							<td>{{ o.hash }}</td>
+							<td>{{ o.resource ? o.resource.title }}</td>
+							<td title="{{ o.dateCreated|date('Y-m-d H:i') }}">
+								{{ o.dateCreated|date('Y-m-d') }}
+							</td>
+							<td title="{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d H:i') }}">
+								{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d') : "Never" }}
+							</td>
+							<td title="{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d H:i') }}">
+								{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d') : "Never" }}
+							</td>
+							<td class="text-center">
+								<a class="btn btn-default btn-xs" href="{{ o.url }}" title="Direct link" target="_blank" rel="noopener noreferrer">
+									<i class="fa fa-link"></i>
+								</a>
+							</td>
+							<td class="text-center">
+								{% if o.resource %}
+									<a class="btn btn-default btn-xs" href="{{ path('resource_show', {'id': o.resource.id}) }}">
+										<i class="fa fa-bar-chart"></i>
+									</a>
+								{% else %}
+									<span class="btn btn-default btn-xs disabled">
+										<i class="fa fa-bar-chart"></i>
+									</span>
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</div>
+
+			<div class="text-center">
+			    {{ knp_pagination_render(onions) }}
+			</div>
+		{% else %}
+			<p class="alert alert-info">
+				No onion found.
+			</p>
+		{% endif %}
+	</div>
+{% endblock %}

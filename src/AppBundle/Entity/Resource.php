@@ -19,9 +19,11 @@ class Resource
     private $dateError;
     private $onion;
     private $errors;
+    private $resourceWords;
 
     public function __construct($url = null) {
         $this->errors = new ArrayCollection();
+        $this->resourceWords = new ArrayCollection();
         $this->dateCreated = new \DateTime();
         $this->totalSuccess = 0;
         $this->countErrors = 0;
@@ -370,5 +372,39 @@ class Resource
     public function getErrors()
     {
         return $this->errors;
+    }
+
+    /**
+     * Add resourceWord
+     *
+     * @param \AppBundle\Entity\ResourceWord $resourceWord
+     *
+     * @return Resource
+     */
+    public function addResourceWord(\AppBundle\Entity\ResourceWord $resourceWord)
+    {
+        $this->resourceWords[] = $resourceWord;
+
+        return $this;
+    }
+
+    /**
+     * Remove resourceWord
+     *
+     * @param \AppBundle\Entity\ResourceWord $resourceWord
+     */
+    public function removeResourceWord(\AppBundle\Entity\ResourceWord $resourceWord)
+    {
+        $this->resourceWords->removeElement($resourceWord);
+    }
+
+    /**
+     * Get resourceWords
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getResourceWords()
+    {
+        return $this->resourceWords;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace AppBundle\Repository;
 
+use AppBundle\Entity\Resource;
+
 class ResourceRepository extends \Doctrine\ORM\EntityRepository
 {
 	public function findOneByUrl($url) {
@@ -34,5 +36,16 @@ class ResourceRepository extends \Doctrine\ORM\EntityRepository
 		}
 
 		return $resources;
+	}
+
+	public function findRelatedForResource(Resource $resource, $nb = 10) {
+		return $this->createQueryBuilder("r")
+			->select("r, o")
+			->innerJoin("r.onion", "o")
+			->where("o.id = :onionId")->setParameter("onionId", $resource->getOnion()->getId())
+			->andWhere("r.id != :resourceId")->setParameter("resourceId", $resource->getId())
+			->orderBy("r.url", "ASC")
+			->setMaxResults($nb)
+			->getQuery()->getResult();
 	}
 }

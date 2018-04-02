@@ -2,18 +2,17 @@
 
 namespace AppBundle\Entity;
 
-class ResourceError
+class ResourceWord
 {
     private $id;
-    private $label;
     private $count;
     private $dateCreated;
-    private $dateLastSeen;
+    private $dateSeen;
     private $resource;
+    private $word;
 
     public function __construct() {
         $this->dateCreated = new \DateTime();
-        $this->count = 0;
     }
 
     /**
@@ -27,35 +26,11 @@ class ResourceError
     }
 
     /**
-     * Set label
-     *
-     * @param string $label
-     *
-     * @return ResourceError
-     */
-    public function setLabel($label)
-    {
-        $this->label = $label;
-
-        return $this;
-    }
-
-    /**
-     * Get label
-     *
-     * @return string
-     */
-    public function getLabel()
-    {
-        return $this->label;
-    }
-
-    /**
      * Set count
      *
      * @param integer $count
      *
-     * @return ResourceError
+     * @return ResourceWord
      */
     public function setCount($count)
     {
@@ -79,7 +54,7 @@ class ResourceError
      *
      * @param \DateTime $dateCreated
      *
-     * @return ResourceError
+     * @return ResourceWord
      */
     public function setDateCreated($dateCreated)
     {
@@ -99,27 +74,27 @@ class ResourceError
     }
 
     /**
-     * Set dateLastSeen
+     * Set dateSeen
      *
-     * @param \DateTime $dateLastSeen
+     * @param \DateTime $dateSeen
      *
-     * @return ResourceError
+     * @return ResourceWord
      */
-    public function setDateLastSeen($dateLastSeen)
+    public function setDateSeen($dateSeen)
     {
-        $this->dateLastSeen = $dateLastSeen;
+        $this->dateSeen = $dateSeen;
 
         return $this;
     }
 
     /**
-     * Get dateLastSeen
+     * Get dateSeen
      *
      * @return \DateTime
      */
-    public function getDateLastSeen()
+    public function getDateSeen()
     {
-        return $this->dateLastSeen;
+        return $this->dateSeen;
     }
 
     /**
@@ -127,7 +102,7 @@ class ResourceError
      *
      * @param \AppBundle\Entity\Resource $resource
      *
-     * @return ResourceError
+     * @return ResourceWord
      */
     public function setResource(\AppBundle\Entity\Resource $resource = null)
     {
@@ -144,5 +119,29 @@ class ResourceError
     public function getResource()
     {
         return $this->resource;
+    }
+
+    /**
+     * Set word
+     *
+     * @param \AppBundle\Entity\Word $word
+     *
+     * @return ResourceWord
+     */
+    public function setWord(\AppBundle\Entity\Word $word = null)
+    {
+        $this->word = $word;
+
+        return $this;
+    }
+
+    /**
+     * Get word
+     *
+     * @return \AppBundle\Entity\Word
+     */
+    public function getWord()
+    {
+        return $this->word;
     }
 }

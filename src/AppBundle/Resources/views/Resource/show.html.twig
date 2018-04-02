@@ -1,0 +1,101 @@
+{% extends "base.html.twig" %}
+
+{% block content %}
+    <div class="container">
+	    <h1 class="text-center">
+	        {% if resource.title %}
+	        	{{ resource.title }}
+	        	<br>
+	        	<small>{{ resource.url }}</small>
+	        {% else %}
+	        	{{ resource.url }}
+	        {% endif %}
+	    </h1>
+
+	    <br>
+
+	    <p class="text-center">
+	    	<a class="btn btn-default" href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">
+	    		<i class="fa fa-link"></i>
+	    		Direct link
+	    	</a>
+	    </p>
+
+	    <br>
+
+	    <div class="panel panel-default">
+	    	<div class="panel-heading">
+	    		<div class="panel-title">Information</div>
+	    	</div>
+			<table class="table">
+				<tr>
+					<th>URL</th>
+					<td>{{ resource.url }}</td>
+				</tr>
+				<tr>
+					<th>Title</th>
+					<td>{{ resource.title ?: "-" }}</td>
+				</tr>
+				{% if resource.url != resource.onion.resource.url %}
+					<tr>
+						<th>Onion</th>
+						<td>{{ resource.onion.hash }}</td>
+					</tr>
+				{% endif %}
+				<tr>
+					<th>Creation</th>
+					<td>{{ resource.dateCreated|date('Y-m-d') }}</td>
+				</tr>
+				<tr>
+					<th>Last check</th>
+					<td>{{ resource.dateChecked|date('Y-m-d') }}</td>
+				</tr>
+				<tr>
+					<th>Last seen</th>
+					<td>{{ resource.dateLastSeen|date('Y-m-d') }}</td>
+				</tr>
+			</table>
+		</div>
+
+		{% if resourceWords|length > 0 %}
+			<br>
+
+			<div class="panel panel-default">
+				<div class="panel-heading">
+		    		<div class="panel-title">Words</div>
+		    	</div>
+		    	<div class="panel-body" style="line-height:3em;text-align:justify;">
+		    		{% for rw in resourceWords|slice(0,200) %}
+		    			<a class="btn btn-default" href="{{ path('word_show', {'id': rw.word.id}) }}" title="x{{ rw.count }}">
+		    				{{ rw.word.string }}
+		    			</a>
+		    		{% endfor %}
+		    		{% if resourceWords|length > 200 %}
+		    			and more...
+		    		{% endif %}
+		    	</div>
+			</div>
+		{% endif %}
+
+		{% if relatedResources|length > 0 %}
+			<br>
+
+			<div class="panel panel-default">
+		    	<div class="panel-heading">
+		    		<div class="panel-title">Other URLs</div>
+		    	</div>
+		    	<ul class="list-group">
+		    		{% for r in relatedResources %}
+			    		<a class="list-group-item" href="{{ path('resource_show', {'id': r.id}) }}">
+		    				{% if r.title %}
+		    					{{ r.title }} - {{ r.url }}
+		    				{% else %}
+		    					{{ r.url }}
+		    				{% endif %}
+		    			</a>
+			    	{% endfor %}
+		    	</ul>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}

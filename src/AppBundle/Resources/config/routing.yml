@@ -1,19 +1,15 @@
 homepage:
     path: /
-    defaults: { _controller: AppBundle:Default:onions }
+    defaults: { _controller: AppBundle:Onion:index }
 
-onions:
-    path: /onions
-    defaults: { _controller: AppBundle:Default:onions }
+onion:
+    resource: "@AppBundle/Resources/config/routing/onion.yml"
+    prefix: /onion
 
-resources:
-    path: /urls
-    defaults: { _controller: AppBundle:Default:resources }
+resource:
+    resource: "@AppBundle/Resources/config/routing/resource.yml"
+    prefix: /url
 
-check_onion:
-    path: /check/onion/{hash}
-    defaults: { _controller: AppBundle:Default:checkOnion }
-
-check_resource:
-    path: /check/url/{id}
-    defaults: { _controller: AppBundle:Default:checkResource }
+word:
+    resource: "@AppBundle/Resources/config/routing/word.yml"
+    prefix: /word

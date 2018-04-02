@@ -2,17 +2,22 @@
 
 namespace AppBundle\Services;
 
+use AppBundle\Services\HtmlParser;
 use Doctrine\ORM\EntityManagerInterface;
 
 use AppBundle\Entity\Onion;
 use AppBundle\Entity\Resource;
 use AppBundle\Entity\ResourceError;
+use AppBundle\Entity\ResourceWord;
+use AppBundle\Entity\Word;
 
 class Parser {
     private $em;
+    private $htmlParser;
 
-    public function __construct(EntityManagerInterface $em) {
+    public function __construct(EntityManagerInterface $em, HtmlParser $htmlParser) {
         $this->em = $em;
+        $this->htmlParser = $htmlParser;
     }
 
     // https://stackoverflow.com/questions/15445285
@@ -58,52 +63,6 @@ class Parser {
         curl_close($ch);
 
         return $response;
-    }
-
-    public function getTitleFromHtml($html) {
-        $title = null;
-
-        if(preg_match('#<title>(.*)</title>#isU', $html, $match)) {
-            $title = $match[1];
-            $title = mb_convert_encoding($title, 'UTF-8');
-            $title = html_entity_decode($title);
-            $title = preg_replace('/\s+/', ' ', $title);
-            $title = trim($title);
-        }
-
-        return $title;
-    }
-
-    public function getUrlsFromHtml($html) {
-        $urls = array();
-
-        preg_match_all('#<a[^>]*href="(.*)"[^>]*>#isU', $html, $matches);
-
-        foreach($matches[1] as $url) {
-            if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
-                $urls[] = $url;
-            }
-        }
-
-        return array_unique($urls);
-    }
-
-    public function getOnionUrlsFromHtml($html) {
-        $urls = array();
-
-        preg_match_all('#<a[^>]*href="(.*)"[^>]*>#isU', $html, $matches);
-
-        foreach($matches[1] as $url) {
-            $url = trim($url);
-            if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
-                $hostname = parse_url($url, PHP_URL_HOST);
-                if($hostname !== false && preg_match('#\.onion$#isU', $hostname)) {
-                    $urls[] = $url;
-                }
-            }
-        }
-
-        return array_unique($urls);
     }
 
     public function getOnionHashesFromContent($content) {
@@ -268,7 +227,7 @@ class Parser {
 
         if($result["success"]) {
             // Title
-            $result["title"] = $this->getTitleFromHtml($result["content"]);
+            $result["title"] = $this->htmlParser->getTitleFromHtml($result["content"]);
             if(!empty($result["title"])) {
                 $title = mb_substr($result["title"], 0, 191);
                 $resource->setTitle($title);
@@ -282,14 +241,63 @@ class Parser {
 
             // Other data
             $result["onion-hashes"] = $this->getOnionHashesFromContent($result["content"]);
-            $result["onion-urls"] = $this->getOnionUrlsFromHtml($result["content"]);
+            $result["onion-urls"] = $this->htmlParser->getOnionUrlsFromHtml($result["content"]);
             
             if($resource->getDateLastSeen() < $date) {
                 $resource->setDateLastSeen($date);
             }
 
+            // Successes and errors
             $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
             $resource->setCountErrors(0);
+
+            // Data about words in the content
+            $dataWords = $this->htmlParser->getWordDataFromHtml($result["content"]);
+
+            $words = $this->em->getRepository("AppBundle:Word")->findForStringsPerString($dataWords["strings"]);
+
+            $existingStrings = [];
+            foreach($words as $word) {
+                $existingStrings[] = $word->getString();
+            }
+
+            // Create new words
+            $missingStrings = array_diff($dataWords["strings"], $existingStrings);
+            if(count($missingStrings) > 0) {
+                foreach($missingStrings as $string) {
+                    $word = new Word();
+                    $word->setString($string);
+                    $word->setLength($dataWords["words"][$string]["length"]);
+                    $this->em->persist($word);
+                }
+                $this->em->flush();
+
+                $words = $this->em->getRepository("AppBundle:Word")->findForStringsPerString($dataWords["strings"]);
+            }
+
+            // Update current words for resource
+            $resourceWords = $this->em->getRepository("AppBundle:ResourceWord")->findForResourceAndStringsPerString($resource, $dataWords["strings"]);
+            foreach($dataWords["strings"] as $string) {
+                if(isset($resourceWords[$string])) {
+                    $resourceWord = $resourceWords[$string];
+                } else {
+                    $resourceWord = new ResourceWord();
+                    $resourceWord->setResource($resource);
+                    $resourceWord->setWord($words[$string]);
+                }
+
+                $resourceWord->setCount($dataWords["words"][$string]["count"]);
+                $resourceWord->setDateSeen($date);
+                $this->em->persist($resourceWord);
+            }
+
+            // Update obsolete words for resource
+            foreach($resourceWords as $string => $resourceWord) {
+                if(!in_array($string, $dataWords["strings"]) && $resourceWord->getCount() > 0) {
+                    $resourceWord->setCount(0);
+                    $this->em->persist($resourceWord);
+                }
+            }
         } else {
             // Error
             $error = isset($result["error"]) ? mb_substr($result["error"], 0, 191) : null;
@@ -360,84 +368,6 @@ class Parser {
         $result = $this->parseResource($resource, $options);
 
         return $result;
-    }
-
-    // Experimental
-    public function parseOnions(array $onions, $multi_exec = false) {
-        $onionsByHash = array();
-        $resources = array();
-        foreach($onions as $onion) {
-            $onionsByHash[$onion->getHash()] = $onion;
-            $resources[$onion->getHash()] = $this->getResourceForOnion($onion);
-        }
-
-        $results = array();
-        if(!$multi_exec) {
-            foreach($resources as $hash => $r) {
-                $results[$hash] = $this->parseResource($r);
-            }
-        } else {
-            $default_options = array(
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_CONNECTTIMEOUT => 15,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_PROXY => "http://127.0.0.1:9050/",
-                CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME
-            );
-
-            $chs = array();
-            foreach($resources as $hash => $r) {
-                $chs[$hash] = curl_init();
-                curl_setopt_array($chs[$hash], $default_options);
-                curl_setopt($chs[$hash], CURLOPT_URL, $r->getUrl());
-            }
-
-            $mh = curl_multi_init();
-            foreach($chs as &$ch) {
-                curl_multi_add_handle($mh, $ch);
-            }
-
-            $active = null;
-            /*do {
-                $mrc = curl_multi_exec($mh, $active);
-            } while($mrc == CURLM_CALL_MULTI_PERFORM);
-
-            while($active && $mrc == CURLM_OK) {
-                if(curl_multi_select($mh) != -1) {
-                    do {
-                        $mrc = curl_multi_exec($mh, $active);
-                    } while($mrc == CURLM_CALL_MULTI_PERFORM);
-                }
-            }*/
-            do {
-                curl_multi_exec($mh, $active);
-                curl_multi_select($mh);
-            } while($active);
-
-            foreach($chs as $hash => &$ch) {
-                $result = array("success" => false);
-
-                $content = curl_multi_getcontent($ch);
-                if($content) {
-                    $result["success"] = true;
-                    $result["content"] = $content;
-                } else {
-                    $result["error"] = curl_error($ch);
-                }
-
-                $result = $this->saveResultForResource($result, $resources[$hash]);
-
-                $results[$hash] = $result;
-
-                curl_multi_remove_handle($mh, $ch);
-                unset($ch);
-            }
-
-            curl_multi_close($mh);
-        }
-
-        return $results;
     }
 
     public function shouldBeParsed($element) {

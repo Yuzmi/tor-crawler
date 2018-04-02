@@ -1,0 +1,13 @@
+resource_index:
+    path: /
+    defaults: { _controller: AppBundle:Resource:index }
+
+resource_show:
+    path: /{id}
+    defaults: { _controller: AppBundle:Resource:show }
+    requirements: { id: \d+ }
+
+resource_check:
+    path: /{id}/check
+    defaults: { _controller: AppBundle:Resource:check }
+    requirements: { id: \d+ }

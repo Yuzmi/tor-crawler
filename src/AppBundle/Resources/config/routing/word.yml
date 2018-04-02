@@ -1,0 +1,8 @@
+word_index:
+    path: /
+    defaults: { _controller: AppBundle:Word:index }
+
+word_show:
+    path: /{id}
+    defaults: { _controller: AppBundle:Word:show }
+    requirements: { id: \d+ }

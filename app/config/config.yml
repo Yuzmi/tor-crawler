@@ -70,4 +70,6 @@ swiftmailer:
     spool: { type: memory }
 
 knp_paginator:
-    page_range: 11
+    page_range: 7
+    template:
+        pagination: "Pagination/sliding.html.twig"

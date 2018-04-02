@@ -1,0 +1,26 @@
+AppBundle\Entity\Word:
+    type: entity
+    table: word
+    repositoryClass: AppBundle\Repository\WordRepository
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        string:
+            type: string
+            length: 191
+            options:
+                collation: utf8mb4_bin
+        length:
+            type: integer
+        dateCreated:
+            type: datetime
+    oneToMany:
+        resourceWords:
+            targetEntity: ResourceWord
+            mappedBy: word
+            cascade: ["remove"]
+    uniqueConstraints:
+        word_string_idx:
+            columns: [ string ]

@@ -1,0 +1,47 @@
+{% extends "base.html.twig" %}
+
+{% set route = app.request.attributes.get('_route') %}
+{% set routeParams = app.request.attributes.get('_route_params')|merge(app.request.query.all) %}
+
+{% block content %}
+	<h1 class="text-center">
+        <a href="{{ path('word_index') }}">
+            Words
+        </a>
+    </h1>
+
+    <br>
+
+    <div class="container">
+		<div class="text-center">
+			<form class="form-inline" method="get" action="{{ path(route, routeParams) }}">
+				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="Word..." style="min-width:50%;">
+				<button class="btn btn-default" type="submit">Filter</button>
+			</form>
+		</div>
+
+		<br>
+
+		<div class="text-center">
+			{{ words.totalItemCount }} word{{ words.totalItemCount > 1 ? "s" }}
+		</div>
+
+		<br>
+
+		<div class="text-center">
+		    {{ knp_pagination_render(words) }}
+		</div>
+
+		<div style="line-height:3em;text-align:justify;">
+			{% for word in words %}
+				<a class="btn btn-default" href="{{ path('word_show', {'id': word.id}) }}">
+					{{ word.string|escape }}
+				</a>
+			{% endfor %}
+		</div>
+
+		<div class="text-center">
+		    {{ knp_pagination_render(words) }}
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html.twig" %}
+
+{% set route = app.request.attributes.get('_route') %}
+{% set routeParams = app.request.attributes.get('_route_params')|merge(app.request.query.all) %}
+
+{% block content %}
+    <div class="container">
+    	<h1 class="text-center">
+	        {{ word.string }}
+	    </h1>
+
+	    <br>
+
+		<div class="text-center">
+			{{ resourceWords.totalItemCount }} result{{ resourceWords.totalItemCount > 1 ? "s" }}
+		</div>
+
+		<br>
+
+		<div class="text-center">
+		    {{ knp_pagination_render(resourceWords) }}
+		</div>
+
+		<div class="table-responsive">
+			<table class="table table-striped table-bordered table-condensed">
+				{% set ths = {
+					'r.url': "URL",
+					'r.title': "Title",
+					'rw.counter': "Count"
+				} %}
+				<tr>
+					{% for key,value in ths %}
+						<th>
+							{{ knp_pagination_sortable(resourceWords, value, key) }}
+							{% if resourceWords.isSorted(key) %}
+								{% if resourceWords.direction == "asc" %}
+									<i class="fa fa-caret-down"></i>
+								{% elseif resourceWords.direction == "desc" %}
+									<i class="fa fa-caret-up"></i>
+								{% endif %}
+							{% endif %}
+						</th>
+					{% endfor %}
+					<th colspan="2"></th>
+				</tr>
+				{% for rw in resourceWords %}
+					<tr>
+						<td>{{ rw.resource.url }}</td>
+						<td>{{ rw.resource.title }}</td>
+						<td>{{ rw.count }}</td>
+						<td class="text-center">
+							<a class="btn btn-default btn-xs" href="{{ rw.resource.url }}" title="Direct link">
+								<i class="fa fa-link"></i>
+							</a>
+						</td>
+						<td class="text-center">
+							<a class="btn btn-default btn-xs" href="{{ path('resource_show', {'id': rw.resource.id}) }}">
+								<i class="fa fa-bar-chart"></i>
+							</a>
+						</td>
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+
+		<div class="text-center">
+		    {{ knp_pagination_render(resourceWords) }}
+		</div>
+
+		{% if relatedWords|length > 0 %}
+			<br>
+
+			<div class="panel panel-default">
+		    	<div class="panel-heading">
+		    		<div class="panel-title">Other words</div>
+		    	</div>
+		    	<div class="panel-body" style="line-height:3em;text-align:justify;">
+		    		{% for w in relatedWords %}
+			    		<a class="btn btn-default" href="{{ path('word_show', {'id': w.id}) }}">
+		    				{{ w.string }}
+		    			</a>
+			    	{% endfor %}
+		    	</div>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}

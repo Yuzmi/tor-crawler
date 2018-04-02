@@ -1,0 +1,25 @@
+AppBundle\Entity\ResourceWord:
+    type: entity
+    table: resource_word
+    repositoryClass: AppBundle\Repository\ResourceWordRepository
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        count:
+            type: integer
+        dateCreated:
+            type: datetime
+        dateSeen:
+            type: datetime
+    manyToOne:
+        resource:
+            targetEntity: Resource
+            inversedBy: resourceWords
+        word:
+            targetEntity: Word
+            inversedBy: resourceWords
+    uniqueConstraints:
+        resource_word_idx:
+            columns: [ resource_id, word_id ]
