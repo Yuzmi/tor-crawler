@@ -66,22 +66,5 @@
 		<div class="text-center">
 		    {{ knp_pagination_render(resourceWords) }}
 		</div>
-
-		{% if relatedWords|length > 0 %}
-			<br>
-
-			<div class="panel panel-default">
-		    	<div class="panel-heading">
-		    		<div class="panel-title">Other words</div>
-		    	</div>
-		    	<div class="panel-body" style="line-height:3em;text-align:justify;">
-		    		{% for w in relatedWords %}
-			    		<a class="btn btn-default" href="{{ path('word_show', {'id': w.id}) }}">
-		    				{{ w.string }}
-		    			</a>
-			    	{% endfor %}
-		    	</div>
-			</div>
-		{% endif %}
 	</div>
 {% endblock %}

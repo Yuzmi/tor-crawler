@@ -52,12 +52,9 @@ class WordController extends BaseController {
             40
         );
 
-        $relatedWords = $this->getRepo("Word")->findRelatedForWord($word, 30);
-
         return $this->render("@App/Word/show.html.twig", [
             "word" => $word,
-            "resourceWords" => $resourceWords,
-            "relatedWords" => $relatedWords
+            "resourceWords" => $resourceWords
         ]);
     }
 }
