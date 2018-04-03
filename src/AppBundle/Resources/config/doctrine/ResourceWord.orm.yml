@@ -21,5 +21,8 @@ AppBundle\Entity\ResourceWord:
             targetEntity: Word
             inversedBy: resourceWords
     uniqueConstraints:
-        resource_word_idx:
+        rword_resource_word_uniq_idx:
             columns: [ resource_id, word_id ]
+    indexes:
+        rword_count_idx:
+            columns: [ count ]

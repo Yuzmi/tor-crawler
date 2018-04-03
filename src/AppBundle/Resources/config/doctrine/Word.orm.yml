@@ -22,5 +22,9 @@ AppBundle\Entity\Word:
             mappedBy: word
             cascade: ["remove"]
     uniqueConstraints:
-        word_string_idx:
+        word_string_uniq_idx:
             columns: [ string ]
+    indexes:
+        word_length_idx:
+            columns: [ length ]
+
