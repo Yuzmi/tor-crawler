@@ -32,7 +32,7 @@ for(var arg in argv) {
 	} else if(arg == "s" || arg == "threads") {
 		countThreads = argv[arg];
 	} else if(arg == "t" || arg == "timeout") {
-		timeout = argv[arg] * 1000; // Received in seconds
+		timeout = argv[arg] * 1000;
 	}
 }
 
