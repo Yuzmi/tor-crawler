@@ -2,6 +2,7 @@
 
 namespace AppBundle\Repository;
 
+use AppBundle\Entity\Onion;
 use AppBundle\Entity\Word;
 
 class WordRepository extends \Doctrine\ORM\EntityRepository
@@ -62,6 +63,15 @@ class WordRepository extends \Doctrine\ORM\EntityRepository
 			->andWhere("w.id != :wordId")->setParameter("wordId", $word->getId())
 			->orderBy("w.string", "ASC")
 			->setMaxResults($nb)
+			->getQuery()->getResult();
+	}
+
+	public function findForOnion(Onion $onion) {
+		return $this->createQueryBuilder("w")
+			->innerJoin("w.resourceWords", "rw")
+			->innerJoin("rw.resource", "r")
+			->innerJoin("r.onion", "o")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
 			->getQuery()->getResult();
 	}
 }

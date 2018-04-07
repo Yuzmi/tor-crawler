@@ -1,0 +1,28 @@
+AppBundle\Entity\OnionWord:
+    type: entity
+    table: onion_word
+    repositoryClass: AppBundle\Repository\OnionWordRepository
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        count:
+            type: integer
+        countResources:
+            type: integer
+        average:
+            type: float
+    manyToOne:
+        onion:
+            targetEntity: Onion
+            inversedBy: onionWords
+        word:
+            targetEntity: Word
+            inversedBy: onionWords
+    uniqueConstraints:
+        oword_onion_word_uniq_idx:
+            columns: [ onion_id, word_id ]
+    indexes:
+        oword_average_idx:
+            columns: [ average ]

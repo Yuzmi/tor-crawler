@@ -17,6 +17,10 @@ AppBundle\Entity\Word:
         dateCreated:
             type: datetime
     oneToMany:
+        onionWords:
+            targetEntity: OnionWord
+            mappedBy: word
+            cascade: ["remove"]
         resourceWords:
             targetEntity: ResourceWord
             mappedBy: word

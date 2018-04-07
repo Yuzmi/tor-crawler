@@ -11,10 +11,12 @@ class Word
     private $length;
     private $dateCreated;
     private $resourceWords;
+    private $onionWords;
 
     public function __construct($string = null)
     {
         $this->resourceWords = new ArrayCollection();
+        $this->onionWords = new ArrayCollection();
         $this->dateCreated = new \DateTime();
         if($string !== null) {
             $this->setString($string);
@@ -136,5 +138,39 @@ class Word
     public function getResourceWords()
     {
         return $this->resourceWords;
+    }
+
+    /**
+     * Add onionWord
+     *
+     * @param \AppBundle\Entity\OnionWord $onionWord
+     *
+     * @return Word
+     */
+    public function addOnionWord(\AppBundle\Entity\OnionWord $onionWord)
+    {
+        $this->onionWords[] = $onionWord;
+
+        return $this;
+    }
+
+    /**
+     * Remove onionWord
+     *
+     * @param \AppBundle\Entity\OnionWord $onionWord
+     */
+    public function removeOnionWord(\AppBundle\Entity\OnionWord $onionWord)
+    {
+        $this->onionWords->removeElement($onionWord);
+    }
+
+    /**
+     * Get onionWords
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getOnionWords()
+    {
+        return $this->onionWords;
     }
 }

@@ -13,9 +13,14 @@ AppBundle\Entity\Onion:
         dateCreated:
             type: datetime
     oneToMany:
+        onionWords:
+            targetEntity: OnionWord
+            mappedBy: onion
+            cascade: ["remove"]
         resources:
             targetEntity: Resource
             mappedBy: onion
+            cascade: ["remove"]
     oneToOne:
         resource:
             targetEntity: Resource

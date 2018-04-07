@@ -49,6 +49,7 @@ class HtmlParser {
         return array_unique($urls);
     }
 
+    // Need improvements
     public function getWordsFromHtml($html) {
         $words = [];
 
@@ -67,7 +68,7 @@ class HtmlParser {
         $html = str_replace("<", " <", $html); // Avoid "foo<br>bar" becoming "foobar"
         $text = strip_tags($html);
 
-        $text = str_replace("\xc2\xa0", " ", $text); // Remove $nbsp;
+        $text = str_replace("\xc2\xa0", " ", $text); // Replace $nbsp;
         $text = preg_replace("/[\[\]\{\}\(\),;]/i", " ", $text);
         $text = trim(preg_replace("/(\s)+/", " ", $text));
         $text = mb_strtolower($text);

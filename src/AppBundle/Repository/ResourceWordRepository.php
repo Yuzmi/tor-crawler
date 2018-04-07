@@ -2,7 +2,9 @@
 
 namespace AppBundle\Repository;
 
+use AppBundle\Entity\Onion;
 use AppBundle\Entity\Resource;
+use AppBundle\Entity\Word;
 
 class ResourceWordRepository extends \Doctrine\ORM\EntityRepository
 {
@@ -108,6 +110,28 @@ class ResourceWordRepository extends \Doctrine\ORM\EntityRepository
 			->innerJoin("rw.resource", "r")
 			->where("r.id = :resourceId")->setParameter("resourceId", $resource->getId())
 			->andWhere("rw.count > 0")
+			->getQuery()->getSingleScalarResult();
+	}
+
+	public function countForOnionAndWord(Onion $onion, Word $word) {
+		return $this->createQueryBuilder("rw")
+			->select("COUNT(rw)")
+			->innerJoin("rw.resource", "r")
+			->innerJoin("r.onion", "o")
+			->innerJoin("rw.word", "w")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->andWhere("w.id = :wordId")->setParameter("wordId", $word->getId())
+			->getQuery()->getSingleScalarResult();
+	}
+
+	public function sumCountsForOnionAndWord(Onion $onion, Word $word) {
+		return $this->createQueryBuilder("rw")
+			->select("SUM(rw.count)")
+			->innerJoin("rw.resource", "r")
+			->innerJoin("r.onion", "o")
+			->innerJoin("rw.word", "w")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->andWhere("w.id = :wordId")->setParameter("wordId", $word->getId())
 			->getQuery()->getSingleScalarResult();
 	}
 }
