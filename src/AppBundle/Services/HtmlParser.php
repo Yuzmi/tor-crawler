@@ -55,15 +55,17 @@ class HtmlParser {
         	"words" => []
         ];
 
-        if(extension_loaded("tidy")) {
+        // Was supposed to solve problems but cause problems with entities
+        /*if(extension_loaded("tidy")) {
             $html = tidy_repair_string($html, [
             	"output-html" => true,
+                "preserve-entities" => true,
             	"show-body-only" => true
-            ]);
-        }
+            ], "utf8");
+        }*/
 
         $html = $this->removeTagsFromHtml($html, ["script", "style"]);
-        $html = html_entity_decode($html);
+        $html = html_entity_decode($html, ENT_COMPAT|ENT_HTML5, "UTF-8");
 
         $html = str_replace("<", " <", $html); // Avoid "foo<br>bar" becoming "foobar"
         $text = strip_tags($html);
