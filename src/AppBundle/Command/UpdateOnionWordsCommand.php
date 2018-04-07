@@ -25,8 +25,6 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
             $onion = $em->getRepository("AppBundle:Onion")->find($o->getId());
             $onionWords = $em->getRepository("AppBundle:OnionWord")->findForOnionPerWordId($onion);
 
-            $iOnionWord = 0;
-
             $wordsForOnion = $em->getRepository("AppBundle:Word")->findForOnion($onion);
             foreach($wordsForOnion as $word) {
                 if(isset($onionWords[$word->getId()])) {
@@ -52,17 +50,12 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
                 $onionWord->setAverage($average);
 
                 $em->persist($onionWord);
-
-                $iOnionWord++;
-                if($iOnionWord%100 == 0) {
-                    $em->flush();
-                }
             }
 
             $em->flush();
 
-            $i++;
-            if($i%20 == 0 || count($wordsForOnion) > 100) {
+            $iOnion++;
+            if($iOnion%20 == 0) {
                 $em->clear();
             }
 
