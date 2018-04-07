@@ -13,8 +13,6 @@ class WordController extends BaseController {
         if($q != '') {
             $qb->andWhere("w.string LIKE :q");
             $qb->setParameter("q", "%".$q."%");
-        } else {
-            $qb->andWhere("w.length > 4");
         }
 
         $words = $this->get('knp_paginator')->paginate(
