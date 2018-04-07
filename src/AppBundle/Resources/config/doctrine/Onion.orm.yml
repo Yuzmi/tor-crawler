@@ -9,7 +9,7 @@ AppBundle\Entity\Onion:
     fields:
         hash:
             type: string
-            length: 16
+            length: 56
         dateCreated:
             type: datetime
     oneToMany:
