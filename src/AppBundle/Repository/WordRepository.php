@@ -74,4 +74,40 @@ class WordRepository extends \Doctrine\ORM\EntityRepository
 			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
 			->getQuery()->getResult();
 	}
+
+	public function countResourcesForOnionPerId(Onion $onion) {
+		$results = $this->createQueryBuilder("w")
+			->select("w.id AS wordId, COUNT(rw.id) AS countResources")
+			->innerJoin("w.resourceWords", "rw")
+			->innerJoin("rw.resource", "r")
+			->innerJoin("r.onion", "o")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->groupBy("wordId")
+			->getQuery()->getResult();
+
+		$counts = [];
+		foreach($results as $result) {
+			$counts[$result["wordId"]] = $result["countResources"];
+		}
+
+		return $counts;
+	}
+
+	public function sumCountsForOnionPerId(Onion $onion) {
+		$results = $this->createQueryBuilder("w")
+			->select("w.id AS wordId, SUM(rw.count) AS sumCount")
+			->innerJoin("w.resourceWords", "rw")
+			->innerJoin("rw.resource", "r")
+			->innerJoin("r.onion", "o")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->groupBy("wordId")
+			->getQuery()->getResult();
+
+		$sumCounts = [];
+		foreach($results as $result) {
+			$sumCounts[$result["wordId"]] = $result["sumCount"];
+		}
+
+		return $sumCounts;
+	}
 }

@@ -26,6 +26,9 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
             $onionWords = $em->getRepository("AppBundle:OnionWord")->findForOnionPerWordId($onion);
 
             $wordsForOnion = $em->getRepository("AppBundle:Word")->findForOnion($onion);
+            $sumCountsForOnionPerWord = $em->getRepository("AppBundle:Word")->sumCountsForOnionPerId($onion);
+            $countResourcesForOnionPerWord = $em->getRepository("AppBundle:Word")->countResourcesForOnionPerId($onion);
+
             foreach($wordsForOnion as $word) {
                 if(isset($onionWords[$word->getId()])) {
                     $onionWord = $onionWords[$word->getId()];
@@ -37,10 +40,16 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
 
                 $onionWord->setDateUpdated(new \DateTime());
 
-                $count = $em->getRepository("AppBundle:ResourceWord")->sumCountsForOnionAndWord($onion, $word);
+                $count = 0;
+                if(isset($sumCountsForOnionPerWord[$word->getId()])) {
+                    $count = $sumCountsForOnionPerWord[$word->getId()];
+                }
                 $onionWord->setCount($count);
 
-                $countResources = $em->getRepository("AppBundle:ResourceWord")->countForOnionAndWord($onion, $word);
+                $countResources = 0;
+                if(isset($countResourcesForOnionPerWord[$word->getId()])) {
+                    $countResources = $countResourcesForOnionPerWord[$word->getId()];
+                }
                 $onionWord->setCountResources($countResources);
 
                 $average = 0;
