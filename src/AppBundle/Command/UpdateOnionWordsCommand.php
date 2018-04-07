@@ -35,6 +35,8 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
                     $onionWord->setWord($word);
                 }
 
+                $onionWord->setDateUpdated(new \DateTime());
+
                 $count = $em->getRepository("AppBundle:ResourceWord")->sumCountsForOnionAndWord($onion, $word);
                 $onionWord->setCount($count);
 
