@@ -8,6 +8,7 @@ class OnionWord
     private $count;
     private $countResources;
     private $average;
+    private $dateUpdated;
     private $onion;
     private $word;
 
@@ -145,5 +146,29 @@ class OnionWord
     public function getWord()
     {
         return $this->word;
+    }
+
+    /**
+     * Set dateUpdated
+     *
+     * @param \DateTime $dateUpdated
+     *
+     * @return OnionWord
+     */
+    public function setDateUpdated($dateUpdated)
+    {
+        $this->dateUpdated = $dateUpdated;
+
+        return $this;
+    }
+
+    /**
+     * Get dateUpdated
+     *
+     * @return \DateTime
+     */
+    public function getDateUpdated()
+    {
+        return $this->dateUpdated;
     }
 }

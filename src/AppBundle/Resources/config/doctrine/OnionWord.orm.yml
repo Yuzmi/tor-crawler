@@ -13,6 +13,8 @@ AppBundle\Entity\OnionWord:
             type: integer
         average:
             type: float
+        dateUpdated:
+            type: datetime
     manyToOne:
         onion:
             targetEntity: Onion
