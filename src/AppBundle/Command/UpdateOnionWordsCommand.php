@@ -18,12 +18,14 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
 
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
-        $i = 0;
+        $iOnion = 0;
 
         $onions = $em->getRepository("AppBundle:Onion")->findAll();
         foreach($onions as $o) {
             $onion = $em->getRepository("AppBundle:Onion")->find($o->getId());
             $onionWords = $em->getRepository("AppBundle:OnionWord")->findForOnionPerWordId($onion);
+
+            $iOnionWord = 0;
 
             $wordsForOnion = $em->getRepository("AppBundle:Word")->findForOnion($onion);
             foreach($wordsForOnion as $word) {
@@ -50,12 +52,18 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
                 $onionWord->setAverage($average);
 
                 $em->persist($onionWord);
+
+                $iOnionWord++;
+                if($iOnionWord%100 == 0) {
+                    $em->flush();
+                    $em->clear();
+                }
             }
 
             $em->flush();
 
             $i++;
-            if($i%50 == 0) {
+            if($i%20 == 0) {
                 $em->clear();
             }
 
