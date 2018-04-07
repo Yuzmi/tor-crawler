@@ -49,11 +49,8 @@ class HtmlParser {
         return array_unique($urls);
     }
 
-    public function getWordDataFromHtml($html) {
-        $data = [
-        	"strings" => [],
-        	"words" => []
-        ];
+    public function getWordsFromHtml($html) {
+        $words = [];
 
         // Was supposed to solve problems but cause problems with entities
         /*if(extension_loaded("tidy")) {
@@ -75,30 +72,21 @@ class HtmlParser {
         $text = trim(preg_replace("/(\s)+/", " ", $text));
         $text = mb_strtolower($text);
         
-        $words = explode(" ", $text);
-        $words = preg_replace("/^[[:punct:]]+/i", "", $words);
-        $words = preg_replace("/[[:punct:]]+$/i", "", $words);
+        $texts = explode(" ", $text);
+        $texts = preg_replace("/^[[:punct:]]+/i", "", $texts);
+        $texts = preg_replace("/[[:punct:]]+$/i", "", $texts);
 
-        foreach($words as $word) {
+        foreach($texts as $word) {
         	$length = mb_strlen($word);
         	if(
         		$length > 1 && $length <= 50 
         		&& preg_match("/[a-z]/i", $word)
         	) {
-        		if(in_array($word, $data["strings"])) {
-        			$data["words"][$word]["count"]++;
-        		} else {
-        			$data["strings"][] = $word;
-        			$data["words"][$word] = [
-        				"string" => $word,
-        				"length" => $length,
-        				"count" => 1
-        			];
-        		}
+        		$words[] = $word;
         	}
         }
 
-        return $data;
+        return $words;
     }
 
     public function removeTagsFromHtml($html, $tags) {

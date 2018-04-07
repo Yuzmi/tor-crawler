@@ -62,16 +62,16 @@
 
 			<div class="panel panel-default">
 				<div class="panel-heading">
-		    		<div class="panel-title">Words</div>
+		    		<div class="panel-title">Words ({{ countResourceWords }})</div>
 		    	</div>
 		    	<div class="panel-body" style="line-height:3em;text-align:justify;">
-		    		{% for rw in resourceWords|slice(0,200) %}
+		    		{% for rw in resourceWords %}
 		    			<a class="btn btn-default" href="{{ path('word_show', {'id': rw.word.id}) }}" title="x{{ rw.count }}">
 		    				{{ rw.word.string }}
 		    			</a>
 		    		{% endfor %}
-		    		{% if resourceWords|length > 200 %}
-		    			and more...
+		    		{% if countResourceWords > 200 %}
+		    			<span style="margin-left:5px;">and more...</span>
 		    		{% endif %}
 		    	</div>
 			</div>

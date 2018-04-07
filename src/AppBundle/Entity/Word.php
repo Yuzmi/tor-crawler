@@ -12,10 +12,13 @@ class Word
     private $dateCreated;
     private $resourceWords;
 
-    public function __construct()
+    public function __construct($string = null)
     {
         $this->resourceWords = new ArrayCollection();
         $this->dateCreated = new \DateTime();
+        if($string !== null) {
+            $this->setString($string);
+        }
     }
 
     /**
@@ -38,6 +41,7 @@ class Word
     public function setString($string)
     {
         $this->string = $string;
+        $this->length = mb_strlen($string);
 
         return $this;
     }

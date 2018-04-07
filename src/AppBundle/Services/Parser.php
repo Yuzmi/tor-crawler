@@ -3,6 +3,7 @@
 namespace AppBundle\Services;
 
 use AppBundle\Services\HtmlParser;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 
 use AppBundle\Entity\Onion;
@@ -235,6 +236,31 @@ class Parser {
         return $resource;
     }
 
+    public function getWordsForStrings($strings) {
+        $words = $this->em->getRepository("AppBundle:Word")->findForStrings($strings);
+        
+        $existingStrings = [];
+        foreach($words as $word) {
+            $existingStrings[] = $word->getString();
+        }
+
+        $addedStrings = [];
+        foreach($strings as $string) {
+            if(!in_array($string, $existingStrings, true) 
+            && !in_array($string, $addedStrings, true)) {
+                $word = new Word($string);
+                $this->em->persist($word);
+                $words[] = $word;
+                $addedStrings[] = $string;
+            }
+        }
+        if(count($addedStrings) > 0) {
+            $this->em->flush();
+        }
+
+        return new ArrayCollection($words);
+    }
+
     public function saveResultForResource($result, Resource $resource) {
         if(isset($result["date"]) && $result["date"]) {
             $date = $result["date"];
@@ -270,50 +296,36 @@ class Parser {
             $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
             $resource->setCountErrors(0);
 
-            // Data about words in the content
-            $dataWords = $this->htmlParser->getWordDataFromHtml($result["content"]);
+            // Words in content
+            $wordsInContent = $this->htmlParser->getWordsFromHtml($result["content"]);
+            $countWordsPerString = array_count_values($wordsInContent);
 
-            $words = $this->em->getRepository("AppBundle:Word")->findForStringsPerString($dataWords["strings"]);
-
-            $existingStrings = [];
-            foreach($words as $word) {
-                $existingStrings[] = $word->getString();
-            }
-
-            // Create new words
-            $missingStrings = array_diff($dataWords["strings"], $existingStrings);
-            if(count($missingStrings) > 0) {
-                foreach($missingStrings as $string) {
-                    $word = new Word();
-                    $word->setString($string);
-                    $word->setLength($dataWords["words"][$string]["length"]);
-                    $this->em->persist($word);
-                }
-                $this->em->flush();
-
-                $words = $this->em->getRepository("AppBundle:Word")->findForStringsPerString($dataWords["strings"]);
-            }
-
-            // Update current words for resource
-            $resourceWords = $this->em->getRepository("AppBundle:ResourceWord")->findForResourceAndStringsPerString($resource, $dataWords["strings"]);
-            foreach($dataWords["strings"] as $string) {
-                if(isset($resourceWords[$string])) {
-                    $resourceWord = $resourceWords[$string];
+            // Get/create words
+            $words = $this->getWordsForStrings(array_unique($wordsInContent));
+            //echo implode(" ", array_unique($wordsInContent));
+            $existingWordIds = [];
+            $resourceWords = $this->em->getRepository("AppBundle:ResourceWord")->findForResource($resource);
+            foreach($resourceWords as $resourceWord) {
+                if($words->contains($resourceWord->getWord())) {
+                    // Update the word
+                    $resourceWord->setCount($countWordsPerString[$resourceWord->getWord()->getString()]);
+                    $resourceWord->setDateSeen($date);
                 } else {
+                    // Obsolete word
+                    $resourceWord->setCount(0);
+                }
+                $this->em->persist($resourceWord);
+                $existingWordIds[] = $resourceWord->getWord()->getId();
+            }
+            
+            // Create new words for the resource
+            foreach($words as $word) {
+                if(!in_array($word->getId(), $existingWordIds)) {
                     $resourceWord = new ResourceWord();
                     $resourceWord->setResource($resource);
-                    $resourceWord->setWord($words[$string]);
-                }
-
-                $resourceWord->setCount($dataWords["words"][$string]["count"]);
-                $resourceWord->setDateSeen($date);
-                $this->em->persist($resourceWord);
-            }
-
-            // Update obsolete words for resource
-            foreach($resourceWords as $string => $resourceWord) {
-                if(!in_array($string, $dataWords["strings"]) && $resourceWord->getCount() > 0) {
-                    $resourceWord->setCount(0);
+                    $resourceWord->setWord($word);
+                    $resourceWord->setCount($countWordsPerString[$word->getString()]);
+                    $resourceWord->setDateSeen($date);
                     $this->em->persist($resourceWord);
                 }
             }
