@@ -41,7 +41,6 @@ php bin/console app:parse --discover
 php bin/console app:parse http://xxxxxxxxxxxxxxxx.onion
 
 # Parse with Node
-```
 nodejs multi-getter.js
 nodejs multi-getter.js -s20 # 20 threads, default: 10
 nodejs multi-getter.js -t30 # 30s timeout, default: 60
