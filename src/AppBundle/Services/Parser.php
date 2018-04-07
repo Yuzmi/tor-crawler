@@ -302,7 +302,7 @@ class Parser {
 
             // Get/create words
             $words = $this->getWordsForStrings(array_unique($wordsInContent));
-            //echo implode(" ", array_unique($wordsInContent));
+            
             $existingWordIds = [];
             $resourceWords = $this->em->getRepository("AppBundle:ResourceWord")->findForResource($resource);
             foreach($resourceWords as $resourceWord) {
@@ -317,7 +317,7 @@ class Parser {
                 $this->em->persist($resourceWord);
                 $existingWordIds[] = $resourceWord->getWord()->getId();
             }
-            
+
             // Create new words for the resource
             foreach($words as $word) {
                 if(!in_array($word->getId(), $existingWordIds)) {

@@ -10,12 +10,13 @@ var chunkSize = 500;
 var counter = 0;
 var countThreads = 10;
 var filter = null;
+var firstChunkOnly = false;
 var iChunk = 0;
 var iLoop = 0;
 var iSession = 0;
 var iThread = 0;
 var loop = false;
-var loopFirst = false;
+var order = null;
 var urls = [];
 var timeout = 60000;
 
@@ -24,11 +25,12 @@ var argv = require('minimist')(process.argv.slice(2), { boolean: true });
 for(var arg in argv) {
 	if(arg == "f" || arg == "filter") {
 		filter = argv[arg];
-		if(filter == "longchecked") {
-			loopFirst = true;
-		}
+	} else if(arg == "first-only") {
+		firstChunkOnly;
 	} else if((arg == "l" && argv[arg] == true) || (arg == "loop" && argv[arg] == true)) {
 		loop = true;
+	} else if(arg == "o" || arg == "order") {
+		order = argv[arg];
 	} else if(arg == "s" || arg == "threads") {
 		countThreads = argv[arg];
 	} else if(arg == "t" || arg == "timeout") {
@@ -45,9 +47,8 @@ function getUrls(callback) {
 	}
 
 	var command = "php bin/console app:get:urls "+chunkSize+" "+(chunkSize*iChunk);
-	if(filter) {
-		command += " -f "+filter;
-	}
+	if(filter) command += " -f "+filter;
+	if(order) command += " -o "+order;
 
 	cmd.get(command, function(err, data, stderr) {
 		gettingUrls = false;
@@ -69,7 +70,7 @@ function getUrls(callback) {
 }
 
 function getUrlContents(iS) {
-	if(iLoop == 0 || !loopFirst) {
+	if(iLoop == 0 || !firstChunkOnly) {
 		for(var j=0;j<countThreads;j++) {
 			setTimeout(function() {
 				iThread++;
@@ -88,7 +89,7 @@ function getNextUrlContent(iS, iT) {
 			});
 		} else {
 			iSession++;
-			if(!loopFirst) {
+			if(!firstChunkOnly) {
 				iChunk++;
 			}
 
@@ -171,18 +172,6 @@ function saveUrlResult(iT, url, result) {
 
 function hash(data) {
 	return crypto.createHash("sha1").update(data).digest("hex");
-}
-
-function parseFiles(callback) {
-	cmd.get("php bin/console app:parse:files", function(err, data, stderr) {
-		if(err) {
-			console.log(err);
-		}
-
-		if(callback) {
-			callback();
-		}
-	});
 }
 
 function parseFile(file, callback) {
