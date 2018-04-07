@@ -4,10 +4,12 @@ Tor crawler
 Installation
 ------------
 
-Dependencies  
-```shell
-composer install
-npm install
+```
+sudo apt install apache2 libapache2-mod-php7.0 mysql-server php7.0 php7.0-curl php7.0-intl php7.0-mbstring php7.0-mysql php7.0-tidy php7.0-xml php7.0-zip nodejs npm git acl tor  
+sudo a2enmod rewrite && sudo service apache2 restart  
+bash composer.sh
+composer.phar install  
+npm install  
 ```
 
 Database
@@ -18,7 +20,6 @@ php bin/console doctrine:schema:create
 
 ACL permissions  
 ```shell
-sudo apt install acl
 sudo setfacl -R -m u:www-data:rwX var
 sudo setfacl -dR -m u:www-data:rwX var
 ```
@@ -27,6 +28,9 @@ Command
 --------
 
 ```
+# Parse onions from Daniel's listing
+php bin/console app:parse daniel
+
 # Parse onions in database
 php bin/console app:parse
 
@@ -38,7 +42,7 @@ php bin/console app:parse http://xxxxxxxxxxxxxxxx.onion
 
 # Parse with Node
 ```
-node multi-getter.js
-node multi-getter.js -s20 # 20 threads, default: 10
-node multi-getter.js -t30 # 30s timeout, default: 60
+nodejs multi-getter.js
+nodejs multi-getter.js -s20 # 20 threads, default: 10
+nodejs multi-getter.js -t30 # 30s timeout, default: 60
 ```
