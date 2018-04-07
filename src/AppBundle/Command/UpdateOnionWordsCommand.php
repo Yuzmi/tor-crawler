@@ -56,14 +56,13 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
                 $iOnionWord++;
                 if($iOnionWord%100 == 0) {
                     $em->flush();
-                    $em->clear();
                 }
             }
 
             $em->flush();
 
             $i++;
-            if($i%20 == 0) {
+            if($i%20 == 0 || count($wordsForOnion) > 100) {
                 $em->clear();
             }
 
