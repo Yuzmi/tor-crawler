@@ -56,7 +56,7 @@ class ResourceController extends BaseController {
             return $this->redirectToRoute("resource_index");
         }
 
-        $resourceWords = $this->getRepo("ResourceWord")->findForResource($resource);
+        $resourceWords = $this->getRepo("ResourceWord")->findCurrentForResource($resource);
         $relatedResources = $this->getRepo("Resource")->findRelatedForResource($resource, 10);
 
         return $this->render("@App/Resource/show.html.twig", [

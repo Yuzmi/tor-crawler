@@ -42,4 +42,17 @@ class ResourceWordRepository extends \Doctrine\ORM\EntityRepository
 			->addOrderBy("w.string", "ASC")
 			->getQuery()->getResult();
 	}
+
+	public function findCurrentForResource(Resource $resource) {
+		$qb = $this->createQueryBuilder("rw")
+			->select("rw, w")
+			->innerJoin("rw.resource", "r")
+			->innerJoin("rw.word", "w")
+			->where("r.id = :resourceId")->setParameter("resourceId", $resource->getId())
+			->andWhere("rw.count > 0")
+			->orderBy("rw.count", "DESC")
+			->addOrderBy("w.string", "ASC");
+
+		return $qb->getQuery()->getResult();
+	}
 }
