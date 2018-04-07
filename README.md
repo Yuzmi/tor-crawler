@@ -24,7 +24,7 @@ sudo setfacl -R -m u:www-data:rwX var
 sudo setfacl -dR -m u:www-data:rwX var
 ```
 
-Command
+Commands
 --------
 
 ```
