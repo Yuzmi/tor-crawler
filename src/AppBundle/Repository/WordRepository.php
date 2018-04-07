@@ -110,4 +110,21 @@ class WordRepository extends \Doctrine\ORM\EntityRepository
 
 		return $sumCounts;
 	}
+
+	public function sumCountsPerId() {
+		$results = $this->createQueryBuilder("w")
+			->select("w.id AS wordId, SUM(rw.count) AS sumCount")
+			->innerJoin("w.resourceWords", "rw")
+			->innerJoin("rw.resource", "r")
+			->innerJoin("r.onion", "o")
+			->groupBy("wordId")
+			->getQuery()->getResult();
+
+		$sumCounts = [];
+		foreach($results as $result) {
+			$sumCounts[$result["wordId"]] = $result["sumCount"];
+		}
+
+		return $sumCounts;
+	}
 }

@@ -14,6 +14,8 @@ AppBundle\Entity\Word:
                 collation: utf8mb4_bin
         length:
             type: integer
+        count:
+            type: integer
         dateCreated:
             type: datetime
     oneToMany:

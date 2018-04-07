@@ -19,17 +19,18 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
         $iOnion = 0;
+        $now = new \DateTime();
 
-        $onions = $em->getRepository("AppBundle:Onion")->findAll();
-        foreach($onions as $o) {
-            $onion = $em->getRepository("AppBundle:Onion")->find($o->getId());
+        $onionIds = $em->getRepository("AppBundle:Onion")->findIds();
+        foreach($onionIds as $onionId) {
+            $onion = $em->getRepository("AppBundle:Onion")->find($onionId);
             $onionWords = $em->getRepository("AppBundle:OnionWord")->findForOnionPerWordId($onion);
 
             $wordsForOnion = $em->getRepository("AppBundle:Word")->findForOnion($onion);
             $sumCountsForOnionPerWord = $em->getRepository("AppBundle:Word")->sumCountsForOnionPerId($onion);
             $countResourcesForOnionPerWord = $em->getRepository("AppBundle:Word")->countResourcesForOnionPerId($onion);
 
-            foreach($wordsForOnion as $word) {
+            foreach($wordsForOnion as &$word) {
                 if(isset($onionWords[$word->getId()])) {
                     $onionWord = $onionWords[$word->getId()];
                 } else {
@@ -38,7 +39,7 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
                     $onionWord->setWord($word);
                 }
 
-                $onionWord->setDateUpdated(new \DateTime());
+                $onionWord->setDateUpdated($now);
 
                 $count = 0;
                 if(isset($sumCountsForOnionPerWord[$word->getId()])) {
@@ -62,11 +63,7 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
             }
 
             $em->flush();
-
-            $iOnion++;
-            if($iOnion%20 == 0) {
-                $em->clear();
-            }
+            $em->clear();
 
             $output->write(".");
         }

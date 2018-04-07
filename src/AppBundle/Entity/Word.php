@@ -9,6 +9,7 @@ class Word
     private $id;
     private $string;
     private $length;
+    private $count;
     private $dateCreated;
     private $resourceWords;
     private $onionWords;
@@ -18,6 +19,7 @@ class Word
         $this->resourceWords = new ArrayCollection();
         $this->onionWords = new ArrayCollection();
         $this->dateCreated = new \DateTime();
+        $this->count = 0;
         if($string !== null) {
             $this->setString($string);
         }
@@ -172,5 +174,29 @@ class Word
     public function getOnionWords()
     {
         return $this->onionWords;
+    }
+
+    /**
+     * Set count
+     *
+     * @param integer $count
+     *
+     * @return Word
+     */
+    public function setCount($count)
+    {
+        $this->count = $count;
+
+        return $this;
+    }
+
+    /**
+     * Get count
+     *
+     * @return integer
+     */
+    public function getCount()
+    {
+        return $this->count;
     }
 }

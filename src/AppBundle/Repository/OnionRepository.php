@@ -43,4 +43,10 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 
 		return $onions;
 	}
+
+	public function findIds() {
+		return $this->createQueryBuilder("o")
+			->select("o.id")
+			->getQuery()->getScalarResult();
+	}
 }
