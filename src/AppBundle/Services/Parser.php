@@ -99,12 +99,31 @@ class Parser {
         }
 
         $unknownHashes = array_diff($hashes, $dbHashes);
-        foreach($unknownHashes as $h) {
-            $onion = $this->getOnionForHash($h);
-            if($onion) {
-                $onions[] = $onion;
+        $newOnions = $this->createOnionsForHashes($unknownHashes);
+        foreach($newOnions as $onion) {
+            $onions[] = $onion;
+        }
+
+        return $onions;
+    }
+
+    public function createOnionsForHashes($hashes) {
+        $onions = [];
+
+        $i = 0;
+        foreach($hashes as $hash) {
+            $onion = new Onion();
+            $onion->setHash($hash);
+            $onions[] = $onion;
+            $this->em->persist($onion);
+
+            $i++;
+            if($i%100 == 0) {
+                $this->em->flush();
             }
         }
+
+        $this->em->flush();
 
         return $onions;
     }
