@@ -26,7 +26,7 @@ for(var arg in argv) {
 	if(arg == "f" || arg == "filter") {
 		filter = argv[arg];
 	} else if(arg == "first-only") {
-		firstChunkOnly;
+		firstChunkOnly = true;
 	} else if((arg == "l" && argv[arg] == true) || (arg == "loop" && argv[arg] == true)) {
 		loop = true;
 	} else if(arg == "o" || arg == "order") {
