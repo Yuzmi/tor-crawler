@@ -58,7 +58,6 @@ nodejs multi-getter.js -l # Loop
 nodejs multi-getter.js -l -o unchecked --first-only # My favorite
 
 # Update words
-php bin/console app:update:onion-words
 php bin/console app:update:words
 ```
 
@@ -67,7 +66,7 @@ php bin/console app:update:words
 
 ```
 # Update words
-0 1 * * * php /var/www/tor-crawler/bin/console app:update:onion-words && php /var/www/tor-crawler/bin/console app:update:words
+0 1 * * * php /var/www/tor-crawler/bin/console app:update:words
 
 # Parse onions
 0 8,20 * * * nodejs /var/www/tor-crawler/multi-getter.js
