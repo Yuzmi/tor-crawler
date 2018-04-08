@@ -2,6 +2,7 @@
 
 namespace AppBundle\Repository;
 
+use AppBundle\Entity\Onion;
 use AppBundle\Entity\Resource;
 
 class ResourceRepository extends \Doctrine\ORM\EntityRepository
@@ -47,5 +48,17 @@ class ResourceRepository extends \Doctrine\ORM\EntityRepository
 			->orderBy("r.url", "ASC")
 			->setMaxResults($nb)
 			->getQuery()->getResult();
+	}
+
+	public function findForOnion(Onion $onion, $limit = 0) {
+		$qb = $this->createQueryBuilder("r")
+			->innerJoin("r.onion", "o")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId());
+
+		if($limit > 0) {
+			$qb->setMaxResults($limit);
+		}
+
+		return $qb->getQuery()->getResult();
 	}
 }

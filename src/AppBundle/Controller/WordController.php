@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 class WordController extends BaseController {
     public function indexAction(Request $request) {
     	$qb = $this->getRepo("Word")->createQueryBuilder("w")
-            ->orderBy("w.length", "ASC");
+            ->orderBy("w.count", "DESC");
 
         $q = trim($request->query->get("q"));
         if($q != '') {

@@ -34,7 +34,7 @@
 
 		<div style="line-height:3em;text-align:justify;">
 			{% for word in words %}
-				<a class="btn btn-default" href="{{ path('word_show', {'id': word.id}) }}">
+				<a class="btn btn-default" href="{{ path('word_show', {'id': word.id}) }}" title="x{{ word.count }}">
 					{{ word.string|escape }}
 				</a>
 			{% endfor %}

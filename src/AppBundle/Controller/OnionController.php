@@ -51,6 +51,24 @@ class OnionController extends BaseController {
         ));
     }
 
+    public function showAction($hash) {
+        $onion = $this->getRepo("Onion")->findOneByHash($hash);
+        if(!$onion) {
+            return $this->redirectToRoute("onion_index");
+        }
+
+        $onionWords = $this->getRepo("OnionWord")->findCurrentForOnion($onion, 200);
+        $countOnionWords = $this->getRepo("OnionWord")->countCurrentForOnion($onion);
+        $resources = $this->getRepo("Resource")->findForOnion($onion, 10);
+
+        return $this->render("@App/Onion/show.html.twig", [
+            "onion" => $onion,
+            "onionWords" => $onionWords,
+            "countOnionWords" => $countOnionWords,
+            "resources" => $resources
+        ]);
+    }
+
     public function checkAction(Request $request, $hash) {
     	$onion = $this->get("parser")->getOnionForHash($hash);
     	if($onion) {

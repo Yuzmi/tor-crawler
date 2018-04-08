@@ -1,0 +1,65 @@
+{% extends "base.html.twig" %}
+
+{% block content %}
+    <div class="container">
+	    <h1 class="text-center">
+	    	{% if onion.resource and onion.resource.title %}
+	    		{{ onion.resource.title }}
+	    		<br>
+	    		<small>{{ onion.hash }}.onion</small>
+	    	{% else %}
+		        {{ onion.hash }}.onion
+		    {% endif %}
+	    </h1>
+
+	    <br>
+
+	    <p class="text-center">
+	    	<a class="btn btn-default" href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
+	    		<i class="fa fa-link"></i>
+	    		Direct link
+	    	</a>
+	    </p>
+
+		{% if onionWords|length > 0 %}
+			<br>
+
+			<div class="panel panel-default">
+				<div class="panel-heading">
+		    		<div class="panel-title">Words ({{ countOnionWords }})</div>
+		    	</div>
+		    	<div class="panel-body" style="line-height:3em;text-align:justify;">
+		    		{% for ow in onionWords %}
+		    			<a class="btn btn-default" href="{{ path('word_show', {'id': ow.word.id}) }}" title="x{{ ow.countResources }} - {{ ow.count }}">
+		    				{{ ow.word.string }}
+		    			</a>
+		    		{% endfor %}
+		    		{% if countOnionWords > 200 %}
+		    			<span style="margin-left:5px;">and more...</span>
+		    		{% endif %}
+		    	</div>
+			</div>
+		{% endif %}
+
+		{% if resources|length > 0 %}
+			<br>
+
+			<div class="panel panel-default">
+		    	<div class="panel-heading">
+		    		<div class="panel-title">URLs</div>
+		    	</div>
+		    	<ul class="list-group">
+		    		{% for r in resources %}
+			    		<a class="list-group-item" href="{{ path('resource_show', {'id': r.id}) }}">
+		    				{% if r.title %}
+		    					{{ r.title }} - {{ r.url }}
+		    				{% else %}
+		    					{{ r.url }}
+		    				{% endif %}
+		    			</a>
+			    	{% endfor %}
+		    	</ul>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}
