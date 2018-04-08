@@ -215,6 +215,15 @@ class Resource
         return $this->dateChecked;
     }
 
+    public function setDateSeen($dateSeen) {
+        if(!$this->dateFirstSeen) {
+            $this->dateFirstSeen = $dateSeen;
+        }
+        if($this->dateLastSeen < $dateSeen) {
+            $this->dateLastSeen = $dateSeen;
+        }
+    }
+
     public function setDateFirstSeen($dateFirstSeen) {
         $this->dateFirstSeen = $dateFirstSeen;
         return $this;
@@ -225,13 +234,10 @@ class Resource
 
     public function setDateLastSeen($dateLastSeen) {
         $this->dateLastSeen = $dateLastSeen;
-        if(!$this->dateFirstSeen) {
-            $this->dateFirstSeen = $dateLastSeen;
-        }
         return $this;
     }
     public function getDateLastSeen() {
-        return $this->dateLastSeen ?: $this->dateFirstSeen;
+        return $this->dateLastSeen;
     }
 
     /**

@@ -29,19 +29,13 @@
 	    	</div>
 			<table class="table">
 				<tr>
-					<th>URL</th>
-					<td>{{ resource.url }}</td>
+					<th>Onion</th>
+					<td>
+						<a href="{{ path('onion_show', {'hash': resource.onion.hash}) }}">
+							{{ resource.onion.hash }}
+						</a>
+					</td>
 				</tr>
-				<tr>
-					<th>Title</th>
-					<td>{{ resource.title ?: "-" }}</td>
-				</tr>
-				{% if resource.url != resource.onion.resource.url %}
-					<tr>
-						<th>Onion</th>
-						<td>{{ resource.onion.hash }}</td>
-					</tr>
-				{% endif %}
 				<tr>
 					<th>Creation</th>
 					<td>{{ resource.dateCreated|date('Y-m-d') }}</td>
@@ -62,7 +56,9 @@
 
 			<div class="panel panel-default">
 				<div class="panel-heading">
-		    		<div class="panel-title">Words ({{ countResourceWords }})</div>
+		    		<div class="panel-title">
+		    			Words ({{ countResourceWords }})
+		    		</div>
 		    	</div>
 		    	<div class="panel-body" style="line-height:3em;text-align:justify;">
 		    		{% for rw in resourceWords %}
@@ -71,7 +67,9 @@
 		    			</a>
 		    		{% endfor %}
 		    		{% if countResourceWords > 200 %}
-		    			<span style="margin-left:5px;">and more...</span>
+		    			<a class="btn btn-link" href="{{ path('resource_words', {'id': resource.id}) }}">
+		    				and {{ countResourceWords - 200 }} more words...
+		    			</a>
 		    		{% endif %}
 		    	</div>
 			</div>

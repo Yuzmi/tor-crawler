@@ -21,32 +21,38 @@
 	    	</a>
 	    </p>
 
-		{% if onionWords|length > 0 %}
+		{% if countOnionWords > 0 %}
 			<br>
 
 			<div class="panel panel-default">
 				<div class="panel-heading">
-		    		<div class="panel-title">Words ({{ countOnionWords }})</div>
+		    		<div class="panel-title">
+		    			Words ({{ countOnionWords }})
+		    		</div>
 		    	</div>
 		    	<div class="panel-body" style="line-height:3em;text-align:justify;">
 		    		{% for ow in onionWords %}
-		    			<a class="btn btn-default" href="{{ path('word_show', {'id': ow.word.id}) }}" title="x{{ ow.countResources }} - {{ ow.count }}">
+		    			<a class="btn btn-default" href="{{ path('word_show', {'id': ow.word.id}) }}">
 		    				{{ ow.word.string }}
 		    			</a>
 		    		{% endfor %}
 		    		{% if countOnionWords > 200 %}
-		    			<span style="margin-left:5px;">and more...</span>
+		    			<a class="btn btn-link" href="{{ path('onion_words', {'hash': onion.hash}) }}">
+		    				and {{ countOnionWords - 200 }} more words...
+		    			</a>
 		    		{% endif %}
 		    	</div>
 			</div>
 		{% endif %}
 
-		{% if resources|length > 0 %}
+		{% if countResources > 0 %}
 			<br>
 
 			<div class="panel panel-default">
 		    	<div class="panel-heading">
-		    		<div class="panel-title">URLs</div>
+		    		<div class="panel-title">
+		    			URLs ({{ countResources }})
+		    		</div>
 		    	</div>
 		    	<ul class="list-group">
 		    		{% for r in resources %}
@@ -58,6 +64,11 @@
 		    				{% endif %}
 		    			</a>
 			    	{% endfor %}
+			    	{% if countResources > 10 %}
+			    		<a class="list-group-item" href="{{ path('onion_resources', {'hash': onion.hash}) }}">
+			    			And {{ countResources - 10 }} other URLs...
+			    		</a>
+			    	{% endif %}
 		    	</ul>
 			</div>
 		{% endif %}

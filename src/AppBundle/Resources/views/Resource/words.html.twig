@@ -1,0 +1,41 @@
+{% extends "base.html.twig" %}
+
+{% block content %}
+    <div class="container">
+	    <h1 class="text-center">
+		    <a href="{{ path('resource_show', {'id': resource.id}) }}">
+		    	{{ resource.url }}
+		    </a>
+	    </h1>
+
+	    <br>
+
+	    {% if resourceWords.totalItemCount > 0 %}
+	    	<div class="text-center">
+				{{ resourceWords.totalItemCount }} word{{ resourceWords.totalItemCount > 1 ? "s" }}
+			</div>
+
+			<br>
+
+	    	<div class="text-center">
+			    {{ knp_pagination_render(resourceWords) }}
+			</div>
+
+		    <div style="line-height:3em;text-align:justify;">
+		    	{% for rw in resourceWords %}
+		    		<a class="btn btn-default" href="{{ path('word_show', {'id': rw.word.id}) }}">
+	    				{{ rw.word.string }}
+	    			</a>
+		    	{% endfor %}
+		    </div>
+
+		    <div class="text-center">
+			    {{ knp_pagination_render(resourceWords) }}
+			</div>
+		{% else %}
+			<div class="alert alert-info">
+				No word found for this URL
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}

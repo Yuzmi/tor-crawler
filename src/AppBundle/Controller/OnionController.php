@@ -60,13 +60,65 @@ class OnionController extends BaseController {
         $onionWords = $this->getRepo("OnionWord")->findCurrentForOnion($onion, 200);
         $countOnionWords = $this->getRepo("OnionWord")->countCurrentForOnion($onion);
         $resources = $this->getRepo("Resource")->findForOnion($onion, 10);
+        $countResources = $this->getRepo("Resource")->countForOnion($onion);
 
         return $this->render("@App/Onion/show.html.twig", [
             "onion" => $onion,
             "onionWords" => $onionWords,
             "countOnionWords" => $countOnionWords,
-            "resources" => $resources
+            "resources" => $resources,
+            "countResources" => $countResources
         ]);
+    }
+
+    public function resourcesAction(Request $request, $hash) {
+        $onion = $this->getRepo("Onion")->findOneByHash($hash);
+        if(!$onion) {
+            return $this->redirectToRoute("onion_index");
+        }
+
+        $qb = $this->getRepo("Resource")->createQueryBuilder("r")
+            ->innerJoin("r.onion", "o")
+            ->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+            ->orderBy("r.url", "ASC");
+
+        $resources = $this->get('knp_paginator')->paginate(
+            $qb->getQuery(),
+            $request->query->get("page", 1),
+            40
+        );
+
+        return $this->render("@App/Onion/resources.html.twig", array(
+            "onion" => $onion,
+            "resources" => $resources
+        ));
+    }
+
+    public function wordsAction(Request $request, $hash) {
+        $onion = $this->getRepo("Onion")->findOneByHash($hash);
+        if(!$onion) {
+            return $this->redirectToRoute("onion_index");
+        }
+
+        $qb = $this->getRepo("OnionWord")->createQueryBuilder("ow")
+            ->select("ow, w")
+            ->innerJoin("ow.onion", "o")
+            ->innerJoin("ow.word", "w")
+            ->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+            ->andWhere("ow.count > 0")
+            ->orderBy("ow.count", "DESC")
+            ->addOrderBy("w.string", "ASC");
+
+        $onionWords = $this->get('knp_paginator')->paginate(
+            $qb->getQuery(),
+            $request->query->get("page", 1),
+            400
+        );
+
+        return $this->render("@App/Onion/words.html.twig", array(
+            "onion" => $onion,
+            "onionWords" => $onionWords
+        ));
     }
 
     public function checkAction(Request $request, $hash) {

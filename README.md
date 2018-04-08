@@ -66,9 +66,9 @@ php bin/console app:update:words
 
 ```
 # Update words
-0 1 * * * php /var/www/tor-crawler/bin/console app:update:words
+0 0 * * * php /var/www/tor-crawler/bin/console app:update:words
 
 # Parse onions
-0 8,20 * * * nodejs /var/www/tor-crawler/multi-getter.js
+0 12 * * * nodejs /var/www/tor-crawler/multi-getter.js
 
 ```

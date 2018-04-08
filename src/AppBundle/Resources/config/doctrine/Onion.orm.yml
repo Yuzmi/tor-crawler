@@ -30,5 +30,5 @@ AppBundle\Entity\Onion:
                 nullable: true
                 cascade: ["persist"]
     uniqueConstraints:
-        hash_idx:
+        onion_hash_idx:
             columns: [ hash ]

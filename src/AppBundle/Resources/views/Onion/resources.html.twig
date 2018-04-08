@@ -1,69 +1,26 @@
 {% extends "base.html.twig" %}
 
-{% set route = app.request.attributes.get('_route') %}
-{% set routeParams = app.request.attributes.get('_route_params')|merge(app.request.query.all) %}
-
 {% block content %}
-	<h1 class="text-center">
-		<a href="{{ path('resource_index') }}">
-			Onion URLs
-		</a>
-	</h1>
+    <div class="container">
+	    <h1 class="text-center">
+		    <a href="{{ path('onion_show', {'hash': onion.hash}) }}">
+		    	{{ onion.hash }}.onion
+		    </a>
+	    </h1>
 
-	<br>
+	    <br>
 
-	<div class="container">
-		<div class="text-center">
-			<form class="form-inline" method="get" action="{{ path(route, routeParams) }}">
-				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="URL or title" style="min-width:50%;">
-				
-				{% set fields = {
-					'any': "Any",
-					'url': "URL",
-					'title': "Title"
-				} %}
-				<select class="form-control" name="qf">
-					{% for key,value in fields %}
-						<option value="{{ key }}" {{ qf == key ? "selected" }}>
-							{{ value }}
-						</option>
-					{% endfor %}
-				</select>
-
-				<button class="btn btn-default" type="submit">Filter</button>
-			</form>
-		</div>
-
-		<br>
-
-		<div class="text-center">
+    	<div class="text-center">
 			{{ resources.totalItemCount }} URL{{ resources.totalItemCount > 1 ? "s" }}
 		</div>
 
 		<br>
 
 		{% if resources.totalItemCount > 0 %}
-			<div class="text-center">
-				{{ knp_pagination_render(resources) }}
+	    	<div class="text-center">
+			    {{ knp_pagination_render(resources) }}
 			</div>
-		{% endif %}
 
-		{% set navs = {
-			'all': "All",
-			'seen': "Seen",
-			'unseen': "Never seen"
-		} %}
-		<ul class="nav nav-tabs nav-justified">
-			{% for key,value in navs %}
-				<li {% if type == key %}class="active"{% endif %}>
-					<a href="{{ path(route, routeParams|merge({'type': key})) }}">
-						{{ value }}
-					</a>
-				</li>
-			{% endfor %}
-		</ul>
-
-		{% if resources.totalItemCount > 0 %}
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered table-condensed">
 					{% set ths = {
@@ -86,7 +43,7 @@
 								{% endif %}
 							</th>
 						{% endfor %}
-						<th></th>
+						<th colspan="2"></th>
 					</tr>
 					{% for r in resources %}
 						<tr>
@@ -115,13 +72,13 @@
 				</table>
 			</div>
 
-			<div class="text-center">
-				{{ knp_pagination_render(resources) }}
+		    <div class="text-center">
+			    {{ knp_pagination_render(resources) }}
 			</div>
 		{% else %}
-			<p class="alert alert-info">
-				No URL found.
-			</p>
+			<div class="alert alert-info">
+				No URL found for this onion
+			</div>
 		{% endif %}
 	</div>
 {% endblock %}

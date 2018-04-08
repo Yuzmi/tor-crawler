@@ -49,7 +49,6 @@ class HtmlParser {
         return array_unique($urls);
     }
 
-    // Need improvements
     public function getWordsFromHtml($html) {
         $words = [];
 
@@ -69,23 +68,13 @@ class HtmlParser {
         $text = strip_tags($html);
 
         $text = str_replace("\xc2\xa0", " ", $text); // Replace $nbsp;
-        $text = preg_replace("/[\[\]\{\}\(\),;]/i", " ", $text);
-        $text = trim(preg_replace("/(\s)+/", " ", $text));
         $text = mb_strtolower($text);
-        
-        $texts = explode(" ", $text);
-        $texts = preg_replace("/^[[:punct:]]+/i", "", $texts);
-        $texts = preg_replace("/[[:punct:]]+$/i", "", $texts);
+        $text = preg_replace("/(?!\-)[\p{P}=\$€~\|°]/u", " ", $text);
+        $text = trim(preg_replace("/(\s)+/", " ", $text));
 
-        foreach($texts as $word) {
-        	$length = mb_strlen($word);
-        	if(
-        		$length > 1 && $length <= 50 
-        		&& preg_match("/[a-z]/i", $word)
-        	) {
-        		$words[] = $word;
-        	}
-        }
+        $potentialWords = explode(" ", $text);
+
+        $words = preg_grep("/^[\p{L}][\p{L}\d-]{0,30}[\p{L}\d]$/iu", $potentialWords);
 
         return $words;
     }

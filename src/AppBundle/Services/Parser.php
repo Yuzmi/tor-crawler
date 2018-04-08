@@ -69,7 +69,7 @@ class Parser {
     public function getOnionHashesFromContent($content) {
         $hashes = array();
 
-        if(preg_match_all('#([a-z2-7]{16})\.onion#isU', $content, $matches)) {
+        if(preg_match_all('#([a-z2-7]{16,56})\.onion#isU', $content, $matches)) {
             foreach($matches[1] as $hash) {
                 $hashes[] = mb_strtolower($hash);
             }
@@ -284,13 +284,12 @@ class Parser {
                 $resource->setLastLength($result["length"]);
             }
 
+            // Date seen
+            $resource->setDateSeen($date);
+
             // Other data
             $result["onion-hashes"] = $this->getOnionHashesFromContent($result["content"]);
             $result["onion-urls"] = $this->htmlParser->getOnionUrlsFromHtml($result["content"]);
-            
-            if($resource->getDateLastSeen() < $date) {
-                $resource->setDateLastSeen($date);
-            }
 
             // Successes and errors
             $resource->setTotalSuccess($resource->getTotalSuccess() + 1);

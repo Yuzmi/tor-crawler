@@ -6,6 +6,14 @@ onion_show:
     path: /{hash}
     defaults: { _controller: AppBundle:Onion:show }
 
+onion_resources:
+    path: /{hash}/urls
+    defaults: { _controller: AppBundle:Onion:resources }
+
+onion_words:
+    path: /{hash}/words
+    defaults: { _controller: AppBundle:Onion:words }
+
 #onion_check:
 #    path: /{hash}/check
 #    defaults: { _controller: AppBundle:Onion:check }

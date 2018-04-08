@@ -69,6 +69,33 @@ class ResourceController extends BaseController {
         ]);
     }
 
+    public function wordsAction(Request $request, $id) {
+        $resource = $this->getRepo("Resource")->find($id);
+        if(!$resource) {
+            return $this->redirectToRoute("resource_index");
+        }
+
+        $qb = $this->getRepo("ResourceWord")->createQueryBuilder("rw")
+            ->select("rw, w")
+            ->innerJoin("rw.resource", "r")
+            ->innerJoin("rw.word", "w")
+            ->where("r.id = :resourceId")->setParameter("resourceId", $resource->getId())
+            ->andWhere("rw.count > 0")
+            ->orderBy("rw.count", "DESC")
+            ->addOrderBy("w.string", "ASC");
+
+        $resourceWords = $this->get('knp_paginator')->paginate(
+            $qb->getQuery(),
+            $request->query->get("page", 1),
+            400
+        );
+
+        return $this->render("@App/Resource/words.html.twig", [
+            "resource" => $resource,
+            "resourceWords" => $resourceWords
+        ]);
+    }
+
     public function checkAction(Request $request, $id) {
         $resource = $this->getRepo("Resource")->find($id);
         if($resource) {

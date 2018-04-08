@@ -36,19 +36,19 @@
 
 		<br>
 
-		<div class="text-center">
-			{{ onions.totalItemCount }} result{{ onions.totalItemCount > 1 ? "s" }}
+	    <div class="text-center">
+			{{ onions.totalItemCount }} onion{{ onions.totalItemCount > 1 ? "s" }}
 		</div>
 
 		<br>
 
-		{% if onions.count %}
-			<div class="text-center">
+		{% if onions.totalItemCount > 0 %}
+	    	<div class="text-center">
 			    {{ knp_pagination_render(onions) }}
 			</div>
 		{% endif %}
 
-		{% set navs = {
+    	{% set navs = {
 			'all': "All",
 			'seen': "Seen",
 			'unseen': "Never seen"
@@ -63,7 +63,7 @@
 			{% endfor %}
 	    </ul>
 
-	    {% if onions.count %}
+	    {% if onions.totalItemCount > 0 %}
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered table-condensed">
 					{% set ths = {
@@ -86,11 +86,15 @@
 								{% endif %}
 							</th>
 						{% endfor %}
-						<th colspan="2"></th>
+						<th></th>
 					</tr>
 					{% for o in onions %}
 						<tr class="onion" data-onion="{{ o.id }}">
-							<td>{{ o.hash }}</td>
+							<td>
+								<a href="{{ path('onion_show', {'hash': o.hash}) }}">
+									{{ o.hash }}
+								</a>
+							</td>
 							<td>{{ o.resource ? o.resource.title }}</td>
 							<td title="{{ o.dateCreated|date('Y-m-d H:i') }}">
 								{{ o.dateCreated|date('Y-m-d') }}
@@ -102,13 +106,8 @@
 								{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d') : "Never" }}
 							</td>
 							<td class="text-center">
-								<a class="btn btn-default btn-xs" href="{{ o.url }}" title="Direct link" target="_blank" rel="noopener noreferrer">
+								<a class="btn btn-default btn-xs" href="{{ o.url }}" target="_blank" rel="noopener noreferrer">
 									<i class="fa fa-link"></i>
-								</a>
-							</td>
-							<td class="text-center">
-								<a class="btn btn-default btn-xs" href="{{ path('onion_show', {'hash': o.hash}) }}">
-									<i class="fa fa-bar-chart"></i>
 								</a>
 							</td>
 						</tr>

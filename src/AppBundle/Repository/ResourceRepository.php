@@ -53,12 +53,21 @@ class ResourceRepository extends \Doctrine\ORM\EntityRepository
 	public function findForOnion(Onion $onion, $limit = 0) {
 		$qb = $this->createQueryBuilder("r")
 			->innerJoin("r.onion", "o")
-			->where("o.id = :onionId")->setParameter("onionId", $onion->getId());
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->orderBy("r.url", "ASC");
 
 		if($limit > 0) {
 			$qb->setMaxResults($limit);
 		}
 
 		return $qb->getQuery()->getResult();
+	}
+
+	public function countForOnion(Onion $onion) {
+		return $this->createQueryBuilder("r")
+			->select("COUNT(r)")
+			->innerJoin("r.onion", "o")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->getQuery()->getSingleScalarResult();
 	}
 }

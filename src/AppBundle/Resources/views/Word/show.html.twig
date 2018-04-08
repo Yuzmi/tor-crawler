@@ -41,23 +41,16 @@
 							{% endif %}
 						</th>
 					{% endfor %}
-					<th colspan="2"></th>
 				</tr>
 				{% for rw in resourceWords %}
 					<tr>
-						<td>{{ rw.resource.url }}</td>
+						<td>
+							<a href="{{ path('resource_show', {'id': rw.resource.id}) }}">
+								{{ rw.resource.url }}
+							</a>
+						</td>
 						<td>{{ rw.resource.title }}</td>
 						<td>{{ rw.count }}</td>
-						<td class="text-center">
-							<a class="btn btn-default btn-xs" href="{{ rw.resource.url }}" title="Direct link">
-								<i class="fa fa-link"></i>
-							</a>
-						</td>
-						<td class="text-center">
-							<a class="btn btn-default btn-xs" href="{{ path('resource_show', {'id': rw.resource.id}) }}">
-								<i class="fa fa-bar-chart"></i>
-							</a>
-						</td>
 					</tr>
 				{% endfor %}
 			</table>

@@ -1,0 +1,41 @@
+{% extends "base.html.twig" %}
+
+{% block content %}
+    <div class="container">
+	    <h1 class="text-center">
+		    <a href="{{ path('onion_show', {'hash': onion.hash}) }}">
+		    	{{ onion.hash }}.onion
+		    </a>
+	    </h1>
+
+	    <br>
+
+	    {% if onionWords.totalItemCount > 0 %}
+	    	<div class="text-center">
+				{{ onionWords.totalItemCount }} word{{ onionWords.totalItemCount > 1 ? "s" }}
+			</div>
+
+			<br>
+
+	    	<div class="text-center">
+			    {{ knp_pagination_render(onionWords) }}
+			</div>
+
+		    <div style="line-height:3em;text-align:justify;">
+		    	{% for ow in onionWords %}
+		    		<a class="btn btn-default" href="{{ path('word_show', {'id': ow.word.id}) }}">
+	    				{{ ow.word.string }}
+	    			</a>
+		    	{% endfor %}
+		    </div>
+
+		    <div class="text-center">
+			    {{ knp_pagination_render(onionWords) }}
+			</div>
+		{% else %}
+			<div class="alert alert-info">
+				No word found for this onion
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}

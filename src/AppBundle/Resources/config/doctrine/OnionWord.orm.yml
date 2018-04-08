@@ -26,5 +26,7 @@ AppBundle\Entity\OnionWord:
         oword_onion_word_uniq_idx:
             columns: [ onion_id, word_id ]
     indexes:
+        oword_count_idx:
+            columns: [ count ]
         oword_average_idx:
             columns: [ average ]
