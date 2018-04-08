@@ -19,7 +19,6 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
         $iOnion = 0;
-        $now = new \DateTime();
 
         $onionIds = $em->getRepository("AppBundle:Onion")->findIds();
         foreach($onionIds as $onionId) {
@@ -39,7 +38,7 @@ class UpdateOnionWordsCommand extends ContainerAwareCommand {
                     $onionWord->setWord($word);
                 }
 
-                $onionWord->setDateUpdated($now);
+                $onionWord->setDateUpdated(new \DateTime());
 
                 $count = 0;
                 if(isset($sumCountsForOnionPerWord[$word->getId()])) {

@@ -28,6 +28,9 @@ sudo setfacl -dR -m u:www-data:rwX var
 
 # Timezone
 sudo dpkg-reconfigure tzdata
+
+# App environment
+echo "export SYMFONY_ENV=prod" >> ~/.bash_profile
 ```
 
 Commands
@@ -53,4 +56,20 @@ nodejs multi-getter.js -t30 # 30s timeout, default: 60
 nodejs multi-getter.js -o url # Order by url/created/unchecked, default: created
 nodejs multi-getter.js -l # Loop
 nodejs multi-getter.js -l -o unchecked --first-only # My favorite
+
+# Update words
+php bin/console app:update:onion-words
+php bin/console app:update:words
+```
+
+[CRON](https://crontab.guru/)
+----
+
+```
+# Update words
+0 1 * * * php /var/www/tor-crawler/bin/console app:update:onion-words && php /var/www/tor-crawler/bin/console app:update:words
+
+# Parse onions
+0 8,20 * * * nodejs /var/www/tor-crawler/multi-getter.js
+
 ```

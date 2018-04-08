@@ -2,6 +2,6 @@ onion_index:
     path: /
     defaults: { _controller: AppBundle:Onion:index }
 
-onion_check:
-    path: /{hash}/check
-    defaults: { _controller: AppBundle:Onion:check }
+#onion_check:
+#    path: /{hash}/check
+#    defaults: { _controller: AppBundle:Onion:check }
