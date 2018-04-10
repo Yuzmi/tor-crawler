@@ -20,9 +20,17 @@ class Parser {
         $this->em = $em;
         $this->htmlParser = $htmlParser;
     }
+    
+    private $userAgents = [
+        "Mozilla/5.0 (Windows NT 6.2; rv:20.0) Gecko/20121202 Firefox/20.0",
+        "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:7.0.1) Gecko/20100101 Firefox/7.0.12",
+        "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",
+        "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:21.0) Gecko/20130330 Firefox/21.0",
+        "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0"
+    ];
 
     // https://stackoverflow.com/questions/15445285
-    public function getUrlContent($url, $options = []) {
+    public function getUrlData($url, $options = []) {
         $response = array("success" => false);
 
         $ch = curl_init();
@@ -32,11 +40,12 @@ class Parser {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
             CURLOPT_CONNECTTIMEOUT => 15,
-            CURLOPT_TIMEOUT => 30
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_USERAGENT => $this->userAgents[array_rand($this->userAgents)]
         ));
 
         curl_setopt_array($ch, array(
-            CURLOPT_PROXY => "http://127.0.0.1:9050/",
+            CURLOPT_PROXY => "http://127.0.0.1:9150/",
             CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME
         ));
 
@@ -66,21 +75,225 @@ class Parser {
         return $response;
     }
 
-    public function getOnionHashesFromContent($content) {
-        $hashes = array();
+    public function parseUrl($url, $options = []) {
+        if(isset($options["data"])) {
+            $data = $options["data"];
+        } else {
+            $data = $this->getUrlData($url, $options);
+        }
 
-        if(preg_match_all('#([a-z2-7]{16,56})\.onion#isU', $content, $matches)) {
-            foreach($matches[1] as $hash) {
-                $hashes[] = mb_strtolower($hash);
+        // Get resource for URL
+        $resource = null;
+        if(isset($options["resource"])) {
+            $resource = $options["resource"];
+        } else {
+            $resource = $this->getResourceForUrl($url);
+        }
+        $data["resource"] = $resource;
+
+        // Get onion for URL
+        $onion = null;
+        if(isset($options["onion"])) {
+            $onion = $options["onion"];
+        } elseif($resource && $resource->getOnion()) {
+            $onion = $resource->getOnion();
+        } else {
+            $onion = $this->getOnionForUrl($url);
+        }
+        $data["onion"] = $onion;
+
+        if($data["success"]) {
+            // Title
+            $data["title"] = $this->htmlParser->getTitleFromHtml($data["content"]);
+
+            // Length
+            $data["length"] = mb_strlen($data["content"]);
+
+            // Get onions from content
+            $data["onion-hashes"] = $this->htmlParser->getOnionHashesFromContent($data["content"]);
+            $data["onions"] = $this->getOnionsForHashes($data["onion-hashes"]);
+
+            // Get resources from content
+            $data["onion-urls"] = $this->htmlParser->getOnionUrlsFromHtml($data["content"]);
+            $data["resources"] = $this->getResourcesForUrls($data["onion-urls"]);
+        }
+
+        if($resource) {
+            $this->saveDataForResource($data, $resource);
+        }
+
+        return $data;
+    }
+
+    public function parseResource(Resource $resource, $options = []) {
+        $options["resource"] = $resource;
+
+        $data = $this->parseUrl($resource->getUrl(), $options);
+
+        return $data;
+    }
+
+    public function parseOnion(Onion $onion, $options = []) {
+        $options["onion"] = $onion;
+
+        $resource = $this->getResourceForOnion($onion);
+        if($resource) {
+            $data = $this->parseResource($resource, $options);
+        } else {
+            $data = null;
+        }
+
+        return $data;
+    }
+
+    public function parseHash($hash) {
+        $data = null;
+
+        $onion = $this->getOnionForHash($hash);
+        if($onion) {
+            $data = $this->parseOnion($onion);
+        }
+
+        return $data;
+    }
+
+    public function saveDataForResource($data, Resource $resource) {
+        if(isset($data["date"]) && $data["date"]) {
+            $date = $data["date"];
+        } else {
+            $date = new \DateTime();
+        }
+
+        if($date < $resource->getDateChecked()) {
+            return;
+        }
+
+        $resource->setDateChecked($date);
+
+        if($data["success"]) {
+            // Title
+            $title = mb_substr($data["title"], 0, 191);
+            if(!empty($title)) {
+                $resource->setTitle($title);
+            }
+
+            // Content length
+            if($data["length"] > 0) {
+                $resource->setLastLength($data["length"]);
+            }
+
+            // Date seen
+            $resource->setDateSeen($date);
+
+            // Successes and errors
+            $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
+            $resource->setCountErrors(0);
+
+            // --- Words --- //
+
+            // Words in content
+            $wordsInContent = $this->htmlParser->getWordsFromHtml($data["content"]);
+            $countWordsPerString = array_count_values($wordsInContent);
+
+            // Get/create words
+            $words = $this->getWordsForStrings(array_unique($wordsInContent));
+            
+            $existingWordIds = [];
+            $resourceWords = $this->em->getRepository("AppBundle:ResourceWord")->findForResource($resource);
+            foreach($resourceWords as $resourceWord) {
+                if($words->contains($resourceWord->getWord())) {
+                    // Update the word
+                    $resourceWord->setCount($countWordsPerString[$resourceWord->getWord()->getString()]);
+                    $resourceWord->setDateSeen($date);
+                } else {
+                    // Obsolete word
+                    $resourceWord->setCount(0);
+                }
+                $this->em->persist($resourceWord);
+                $existingWordIds[] = $resourceWord->getWord()->getId();
+            }
+
+            // Create new words for the resource
+            foreach($words as $word) {
+                if(!in_array($word->getId(), $existingWordIds)) {
+                    $resourceWord = new ResourceWord();
+                    $resourceWord->setResource($resource);
+                    $resourceWord->setWord($word);
+                    $resourceWord->setCount($countWordsPerString[$word->getString()]);
+                    $resourceWord->setDateSeen($date);
+                    $this->em->persist($resourceWord);
+                }
+            }
+        } else {
+            // Error
+            $error = isset($data["error"]) ? mb_substr($data["error"], 0, 191) : null;
+            $resource->setLastError($error);
+
+            if($resource->getDateError() < $date) {
+                $resource->setDateError($date);
+            }
+
+            $resource->setCountErrors($resource->getCountErrors() + 1);
+
+            // ResourceError
+            $rError = $this->em->getRepository("AppBundle:ResourceError")->findOneBy([
+                "label" => $error,
+                "resource" => $resource
+            ]);
+
+            $newError = false;
+            if(!$rError) {
+                $rError = new ResourceError();
+                $rError->setLabel($error);
+                $rError->setResource($resource);
+                $resource->addError($rError);
+                $newError = true;
+            }
+
+            $rError->setCount($rError->getCount() + 1);
+            $rError->setDateLastSeen(new \DateTime());
+
+            if(!$newError) {
+                $this->em->persist($rError);
             }
         }
 
-        return array_unique($hashes);
+        // Enregistrement
+        $this->em->persist($resource);
+        $this->em->flush();
+    }
+
+    public function isOnionHash($hash) {
+        return preg_match("#^[a-z2-7]{16}|[a-z2-7]{56}$#i", $hash);
+    }
+
+    public function isOnionUrl($url, $returnHash = false) {
+        $hostname = parse_url($url, PHP_URL_HOST);
+
+        if($hostname !== false && preg_match('#([a-z2-7]{16}|[a-z2-7]{56})\.onion$#i', $hostname, $match)) {
+            return $returnHash ? $match[1] : true;
+        }
+
+        return false;
+    }
+
+    public function getOnionForUrl($url) {
+        $onion = null;
+
+        if($hash = $this->isOnionUrl($url, true)) {
+            $onion = $this->getOnionForHash($hash);
+        }
+
+        return $onion;
     }
 
     public function getOnionForHash($hash) {
         $onion = $this->em->getRepository("AppBundle:Onion")->findOneByHash($hash);
         if(!$onion) {
+            if(!$this->isOnionHash($hash)) {
+                return null;
+            }
+
             $onion = new Onion();
             $onion->setHash($hash);
             $this->em->persist($onion);
@@ -113,14 +326,16 @@ class Parser {
 
         $i = 0;
         foreach($hashes as $hash) {
-            $onion = new Onion();
-            $onion->setHash($hash);
-            $onions[] = $onion;
-            $this->em->persist($onion);
+            if($this->isOnionHash($hash)) {
+                $onion = new Onion();
+                $onion->setHash($hash);
+                $onions[] = $onion;
+                $this->em->persist($onion);
 
-            $i++;
-            if($i%100 == 0) {
-                $this->em->flush();
+                $i++;
+                if($i%100 == 0) {
+                    $this->em->flush();
+                }
             }
         }
 
@@ -129,49 +344,29 @@ class Parser {
         return $onions;
     }
 
-    public function isOnionHash($hash) {
-        return preg_match("#^[a-z2-7]{16,56}$#i", $hash);
-    }
+    public function getResourceForOnion(Onion $onion) {
+        $resource = $onion->getResource();
+        
+        if(!$resource || $resource->getUrl() != $onion->getUrl()) {
+            $resource = $this->getResourceForUrl($onion->getUrl());
+            $onion->setResource($resource);
 
-    public function isOnionUrl($url, $returnHash = false) {
-        $hostname = parse_url($url, PHP_URL_HOST);
-
-        if($hostname !== false && preg_match('#([a-z2-7]{16,56})\.onion$#i', $hostname, $match)) {
-            return $returnHash ? $match[1] : true;
+            $this->em->persist($onion);
+            $this->em->flush();
         }
 
-        return false;
-    }
-
-    public function getOnionForUrl($url) {
-        $onion = null;
-
-        if($hash = $this->isOnionUrl($url, true)) {
-            $onion = $this->getOnionForHash($hash);
-        }
-
-        return $onion;
-    }
-
-    public function getOnionsFromHtml($html) {
-        $hashes = $this->getOnionHashesFromHtml($html);
-
-        $onions = array();
-        foreach($hashes as $hash) {
-            $onion = $this->getOnionForHash($hash);
-            if($onion) {
-                $onions[] = $onion;
-            }
-        }
-
-        return $onions;
+        return $resource;
     }
 
     public function getResourceForUrl($url) {
         $save = false;
 
-        $resource = $this->em->getRepository("AppBundle:Resource")->findOnebyUrl($url);
+        $resource = $this->em->getRepository("AppBundle:Resource")->findOneByUrl($url);
         if(!$resource) {
+            if(!$this->isOnionUrl($url)) {
+                return null;
+            }
+
             $resource = new Resource($url);
             $save = true;
         }
@@ -222,20 +417,6 @@ class Parser {
         return $resources;
     }
 
-    public function getResourceForOnion(Onion $onion) {
-        $resource = $onion->getResource();
-        
-        if(!$resource || $resource->getUrl() != $onion->getUrl()) {
-            $resource = $this->getResourceForUrl($onion->getUrl());
-            $onion->setResource($resource);
-
-            $this->em->persist($onion);
-            $this->em->flush();
-        }
-
-        return $resource;
-    }
-
     public function getWordsForStrings($strings) {
         $words = $this->em->getRepository("AppBundle:Word")->findForStrings($strings);
         
@@ -261,146 +442,7 @@ class Parser {
         return new ArrayCollection($words);
     }
 
-    public function saveResultForResource($result, Resource $resource) {
-        if(isset($result["date"]) && $result["date"]) {
-            $date = $result["date"];
-        } else {
-            $date = new \DateTime();
-        }
-
-        $resource->setDateChecked($date);
-
-        if($result["success"]) {
-            // Title
-            $result["title"] = $this->htmlParser->getTitleFromHtml($result["content"]);
-            if(!empty($result["title"])) {
-                $title = mb_substr($result["title"], 0, 191);
-                $resource->setTitle($title);
-            }
-
-            // Content size
-            $result["length"] = mb_strlen($result["content"]);
-            if($result["length"]) {
-                $resource->setLastLength($result["length"]);
-            }
-
-            // Date seen
-            $resource->setDateSeen($date);
-
-            // Other data
-            $result["onion-hashes"] = $this->getOnionHashesFromContent($result["content"]);
-            $result["onion-urls"] = $this->htmlParser->getOnionUrlsFromHtml($result["content"]);
-
-            // Successes and errors
-            $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
-            $resource->setCountErrors(0);
-
-            // Words in content
-            $wordsInContent = $this->htmlParser->getWordsFromHtml($result["content"]);
-            $countWordsPerString = array_count_values($wordsInContent);
-
-            // Get/create words
-            $words = $this->getWordsForStrings(array_unique($wordsInContent));
-            
-            $existingWordIds = [];
-            $resourceWords = $this->em->getRepository("AppBundle:ResourceWord")->findForResource($resource);
-            foreach($resourceWords as $resourceWord) {
-                if($words->contains($resourceWord->getWord())) {
-                    // Update the word
-                    $resourceWord->setCount($countWordsPerString[$resourceWord->getWord()->getString()]);
-                    $resourceWord->setDateSeen($date);
-                } else {
-                    // Obsolete word
-                    $resourceWord->setCount(0);
-                }
-                $this->em->persist($resourceWord);
-                $existingWordIds[] = $resourceWord->getWord()->getId();
-            }
-
-            // Create new words for the resource
-            foreach($words as $word) {
-                if(!in_array($word->getId(), $existingWordIds)) {
-                    $resourceWord = new ResourceWord();
-                    $resourceWord->setResource($resource);
-                    $resourceWord->setWord($word);
-                    $resourceWord->setCount($countWordsPerString[$word->getString()]);
-                    $resourceWord->setDateSeen($date);
-                    $this->em->persist($resourceWord);
-                }
-            }
-        } else {
-            // Error
-            $error = isset($result["error"]) ? mb_substr($result["error"], 0, 191) : null;
-            $resource->setLastError($error);
-
-            if($resource->getDateError() < $date) {
-                $resource->setDateError($date);
-            }
-
-            $resource->setCountErrors($resource->getCountErrors() + 1);
-
-            // ResourceError
-            $rError = $this->em->getRepository("AppBundle:ResourceError")->findOneBy([
-                "label" => $error,
-                "resource" => $resource
-            ]);
-
-            $newError = false;
-            if(!$rError) {
-                $rError = new ResourceError();
-                $rError->setLabel($error);
-                $rError->setResource($resource);
-                $resource->addError($rError);
-                $newError = true;
-            }
-
-            $rError->setCount($rError->getCount() + 1);
-            $rError->setDateLastSeen(new \DateTime());
-
-            if(!$newError) {
-                $this->em->persist($rError);
-            }
-        }
-
-        // Enregistrement
-        $this->em->persist($resource);
-        $this->em->flush();
-
-        return $result;
-    }
-
-    public function parseResource(Resource $resource, $options = []) {
-        if(isset($options["result"])) {
-            $result = $options["result"];
-        } else {
-            $result = $this->getUrlContent($resource->getUrl());
-        }
-
-        $result = $this->saveResultForResource($result, $resource);
-
-        return $result;
-    }
-
-    public function parseUrl($url) {
-        $resource = $this->getResourceForUrl($url);
-        if($resource) {
-            $result = $this->parseResource($resource);
-        } else {
-            $result = array("success" => false);
-        }
-
-        return $result;
-    }
-
-    public function parseOnion(Onion $onion, $options = []) {
-        $resource = $this->getResourceForOnion($onion);
-
-        $result = $this->parseResource($resource, $options);
-
-        return $result;
-    }
-
-    public function shouldBeParsed($element) {
+    /*public function shouldBeParsed($element) {
         $now = new \DateTime();
 
         if($element instanceof Onion) {
@@ -430,5 +472,5 @@ class Parser {
         }
 
         return false;
-    }
+    }*/
 }

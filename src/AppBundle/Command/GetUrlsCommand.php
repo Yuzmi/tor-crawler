@@ -36,7 +36,7 @@ class GetUrlsCommand extends ContainerAwareCommand {
         } elseif($filter == "unseen") {
             $qb->where("r.dateFirstSeen IS NULL");
         } elseif($filter == "seen") {
-            $qb->where("r.dateLastSeen IS NOT NULL");
+            $qb->where("r.dateFirstSeen IS NOT NULL");
         } elseif($filter == "valid") {
             $qb->where("r.dateLastSeen = r.dateChecked");
         }

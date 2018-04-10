@@ -30,7 +30,6 @@ class ParseCommand extends ContainerAwareCommand {
             ->addOption("order", "o", InputOption::VALUE_REQUIRED, "How do you sort what you parse ? name/unchecked")
             ->addOption("discover", null, InputOption::VALUE_NONE, "Parse found onions")
             ->addOption("shuffle", null, InputOption::VALUE_NONE, "Shuffle URLs at the beginning")
-            ->addOption("smart", "s", InputOption::VALUE_NONE, "Let's (try to) be smart")
         ;
     }
 
@@ -79,7 +78,6 @@ class ParseCommand extends ContainerAwareCommand {
             return;
         }
 
-        $hashes = []; // Known hashes
         $urls = []; // Known urls
         $parseUrls = []; // Urls to parse
 
@@ -88,29 +86,17 @@ class ParseCommand extends ContainerAwareCommand {
         if($what == "daniel") {
             $danielUrl = "http://onionsnjajzkhm5g.onion/onions.php?format=text";
 
-            $resource = $this->parser->getResourceForUrl($danielUrl);
-            if($resource) {
-                $urls[] = $resource->getUrl();
-                $parseUrls[] = [
-                    "url" => $resource->getUrl(),
-                    "depth" => -1
-                ];
-            } else {
-                $output->writeln("Problem with Daniel URL");
-                return;
-            }
-        } elseif($this->parser->isOnionUrl($what)) {
-            $resource = $this->parser->getResourceForUrl($what);
-            if($resource) {
-                $urls[] = $resource->getUrl();
-                $parseUrls[] = [
-                    "url" => $resource->getUrl(),
-                    "depth" => 0
-                ];
-            } else {
-                $output->writeln("Invalid onion URL");
-                return;
-            }
+            $urls[] = $danielUrl;
+            $parseUrls[] = [
+                "url" => $danielUrl,
+                "depth" => -1
+            ];
+        } elseif(filter_var($what, FILTER_VALIDATE_URL) !== false) {
+            $urls[] = $what;
+            $parseUrls[] = [
+                "url" => $what,
+                "depth" => 0
+            ];
         } elseif($this->parser->isOnionHash($what)) {
             $onion = $this->parser->getOnionForHash($what);
             if($onion) {
@@ -145,13 +131,10 @@ class ParseCommand extends ContainerAwareCommand {
 
             foreach($dbResources as $resource) {
                 $urls[] = $resource->getUrl();
-
-                if(!$input->getOption("smart") || $this->parser->shouldBeParsed($resource)) {
-                    $parseUrls[] = [
-                        "url" => $resource->getUrl(),
-                        "depth" => 0
-                    ];
-                }
+                $parseUrls[] = [
+                    "url" => $resource->getUrl(),
+                    "depth" => 0
+                ];
             }
         } elseif(in_array($what, ["onion", "onions", "o", "", null])) {
             $qb = $em->getRepository("AppBundle:Onion")->createQueryBuilder("o")
@@ -174,15 +157,11 @@ class ParseCommand extends ContainerAwareCommand {
             $dbOnions = $qb->getQuery()->getResult();
 
             foreach($dbOnions as $onion) {
-                $hashes[] = $onion->getHash();
                 $urls[] = $onion->getUrl();
-                
-                if(!$input->getOption("smart") || $this->parser->shouldBeParsed($onion)) {
-                    $parseUrls[] = [
-                        "url" => $onion->getUrl(),
-                        "depth" => 0
-                    ];
-                }
+                $parseUrls[] = [
+                    "url" => $onion->getUrl(),
+                    "depth" => 0
+                ];
             }
         } else {
             $output->writeln("Invalid parameter");
@@ -213,39 +192,26 @@ class ParseCommand extends ContainerAwareCommand {
             $i++;
             $output->write($i."/".count($urls)." : ".$url);
 
-            $result = $this->parser->parseUrl($url);
-            if(!$result["success"]) {
-                $output->writeln(" : KO : ".round($result["duration"])."s".($result["error"] ? " : ".$result["error"] : ""));
+            $data = $this->parser->parseUrl($url);
+            if(!$data["success"]) {
+                $output->writeln(" : KO : ".round($data["duration"])."s".($data["error"] ? " : ".$data["error"] : ""));
                 continue;
             }
 
-            $newHashes = [];
-            foreach($result["onion-hashes"] as $hash) {
-                if(!in_array($hash, $hashes)) {
-                    $hashes[] = $hash;
-                    $newHashes[] = $hash;
-                }
-            }
-
-            if(!empty($newHashes)) {
-                $onions = $this->parser->getOnionsForHashes($newHashes);
-                foreach($onions as $o) {
-                    $onionUrl = $o->getUrl();
-                    if(!in_array($onionUrl, $urls)) {
-                        $urls[] = $onionUrl;
-
-                        if($discover) {
-                            if($mode == "deep") {
-                                array_unshift($parseUrls, [
-                                    "url" => $onionUrl,
-                                    "depth" => 0
-                                ]);
-                            } else {
-                                $parseUrls[] = [
-                                    "url" => $onionUrl,
-                                    "depth" => 0
-                                ];
-                            }
+            foreach($data["onions"] as $onion) {
+                if(!in_array($onion->getUrl(), $urls)) {
+                    $urls[] = $onion->getUrl();
+                    if($discover) {
+                        if($mode == "deep") {
+                            array_unshift($parseUrls, [
+                                "url" => $onion->getUrl(),
+                                "depth" => 0
+                            ]);
+                        } else {
+                            $parseUrls[] = [
+                                "url" => $onion->getUrl(),
+                                "depth" => 0
+                            ];
                         }
                     }
                 }
@@ -253,25 +219,17 @@ class ParseCommand extends ContainerAwareCommand {
 
             $newDepth = $dataUrl["depth"] + 1;
             if($newDepth <= $maxDepth) {
-                $newUrls = [];
-                foreach($result["onion-urls"] as $url) {
-                    if(!in_array($url, $urls)) {
-                        $urls[] = $url;
-                        $newUrls[] = $url;
-                    }
-                }
-
-                if(!empty($newUrls)) {
-                    $resources = $this->parser->getResourcesForUrls($newUrls);
-                    foreach($resources as $r) {
+                foreach($data["resources"] as $resource) {
+                    if(!in_array($resource->getUrl(), $urls)) {
+                        $urls[] = $resource->getUrl();
                         if($mode == "deep") {
                             array_unshift($parseUrls, [
-                                "url" => $r->getUrl(),
+                                "url" => $resource->getUrl(),
                                 "depth" => $newDepth
                             ]);
                         } else {
                             $parseUrls[] = [
-                                "url" => $r->getUrl(),
+                                "url" => $resource->getUrl(),
                                 "depth" => $newDepth
                             ];
                         }
@@ -279,7 +237,7 @@ class ParseCommand extends ContainerAwareCommand {
                 }
             }
 
-            $output->writeln(" : OK : ".round($result["duration"])."s".($result["title"] ? " : ".$result["title"] : ""));
+            $output->writeln(" : OK : ".round($data["duration"])."s".($data["title"] ? " : ".$data["title"] : ""));
         }
     }
 }

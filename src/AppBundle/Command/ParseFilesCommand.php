@@ -42,30 +42,14 @@ class ParseFilesCommand extends ContainerAwareCommand {
                 if(file_exists($path)) {
                     $json = file_get_contents($path);
                     if($json !== false) {
-                        $result = json_decode($json, true);
-                        if(is_array($result)) {
-                            $timestamp = strtotime($result["dateUTC"]);
-                            $result["date"] = $timestamp !== false ? new \DateTime("@".$timestamp) : null;
-                            if($result["date"]) {
-                                date_timezone_set($result["date"], new \DateTimeZone(date_default_timezone_get()));
+                        $data = json_decode($json, true);
+                        if(is_array($data)) {
+                            $timestamp = strtotime($data["dateUTC"]);
+                            $data["date"] = $timestamp !== false ? new \DateTime("@".$timestamp) : null;
+                            if($data["date"]) {
+                                date_timezone_set($data["date"], new \DateTimeZone(date_default_timezone_get()));
 
-                                $resource = null;
-                                if(isset($result["onion"])) {
-                                    $onion = $this->parser->getOnionForHash($result["onion"]);
-                                    if($onion) {
-                                        $resource = $this->parser->getResourceForOnion($onion);
-                                    }
-                                }
-
-                                if(!$resource && isset($result["url"])) {
-                                    $resource = $this->parser->getResourceForUrl($result["url"]);
-                                }
-
-                                if($resource && $result["date"] >= $resource->getDateChecked()) {
-                                    $this->parser->parseResource($resource, [
-                                        "result" => $result
-                                    ]);
-                                }
+                                $this->parser->parseUrl($data["url"], ["data" => $data]);
                             }
                         }
                     }

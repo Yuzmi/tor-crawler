@@ -122,7 +122,7 @@ function getUrlContent(iT, url, callback) {
 		agentClass: Agent,
 		agentOptions: {
 			socksHost: "localhost",
-			socksPort: 9050
+			socksPort: 9150
 		}
 	}, function(errReq, res, body) {
 		clearTimeout(t);

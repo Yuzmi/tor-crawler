@@ -49,6 +49,18 @@ class HtmlParser {
         return array_unique($urls);
     }
 
+    public function getOnionHashesFromContent($content) {
+        $hashes = array();
+
+        if(preg_match_all('#([a-z2-7]{16}|[a-z2-7]{56})\.onion#i', $content, $matches)) {
+            foreach($matches[1] as $hash) {
+                $hashes[] = mb_strtolower($hash);
+            }
+        }
+
+        return array_unique($hashes);
+    }
+
     public function getWordsFromHtml($html) {
         $words = [];
 
