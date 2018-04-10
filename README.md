@@ -5,13 +5,8 @@ Installation
 ------------
 
 ```
-# Tor browser repository
-sudo apt install software-properties-common
-sudo add-apt-repository ppa:webupd8team/tor-browser
-sudo apt update
-
 # Linux Packages
-sudo apt install apache2 libapache2-mod-php7.0 mysql-server php7.0 php7.0-curl php7.0-intl php7.0-mbstring php7.0-mysql php7.0-tidy php7.0-xml php7.0-zip nodejs npm git acl tor tor-browser  
+sudo apt install apache2 libapache2-mod-php7.0 mysql-server php7.0 php7.0-curl php7.0-intl php7.0-mbstring php7.0-mysql php7.0-tidy php7.0-xml php7.0-zip nodejs npm git acl tor 
 
 # Mod rewrite
 sudo a2enmod rewrite && sudo service apache2 restart  

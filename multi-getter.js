@@ -17,6 +17,7 @@ var iSession = 0;
 var iThread = 0;
 var loop = false;
 var order = null;
+var port = 9050;
 var urls = [];
 var timeout = 60000;
 
@@ -31,6 +32,8 @@ for(var arg in argv) {
 		loop = true;
 	} else if(arg == "o" || arg == "order") {
 		order = argv[arg];
+	} else if(arg == "port") {
+		port = argv[arg];
 	} else if(arg == "s" || arg == "threads") {
 		countThreads = argv[arg];
 	} else if(arg == "t" || arg == "timeout") {
@@ -122,7 +125,7 @@ function getUrlContent(iT, url, callback) {
 		agentClass: Agent,
 		agentOptions: {
 			socksHost: "localhost",
-			socksPort: 9150
+			socksPort: port
 		}
 	}, function(errReq, res, body) {
 		clearTimeout(t);

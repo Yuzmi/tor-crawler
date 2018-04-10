@@ -20,7 +20,7 @@ class Parser {
         $this->em = $em;
         $this->htmlParser = $htmlParser;
     }
-    
+
     private $userAgents = [
         "Mozilla/5.0 (Windows NT 6.2; rv:20.0) Gecko/20121202 Firefox/20.0",
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:7.0.1) Gecko/20100101 Firefox/7.0.12",
@@ -45,7 +45,7 @@ class Parser {
         ));
 
         curl_setopt_array($ch, array(
-            CURLOPT_PROXY => "http://127.0.0.1:9150/",
+            CURLOPT_PROXY => "http://127.0.0.1:9050/",
             CURLOPT_PROXYTYPE => CURLPROXY_SOCKS5_HOSTNAME
         ));
 
