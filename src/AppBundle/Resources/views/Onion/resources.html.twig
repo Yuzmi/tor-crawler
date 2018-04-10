@@ -43,12 +43,12 @@
 								{% endif %}
 							</th>
 						{% endfor %}
-						<th colspan="2"></th>
+						<th></th>
 					</tr>
 					{% for r in resources %}
 						<tr>
 							<td>
-								<a href="{{ path("resource_show", {'id': r.id}) }}">
+								<a href="{{ r.url }}" title="Direct link" target="_blank" rel="noopener noreferrer">
 									{{ r.url }}
 								</a>
 							</td>
@@ -63,8 +63,8 @@
 								{{ r.dateLastSeen ? r.dateLastSeen|date('Y-m-d') : "Never" }}
 							</td>
 							<td class="text-center">
-								<a class="btn btn-default btn-xs" href="{{ r.url }}" title="Direct link" target="_blank" rel="noopener noreferrer">
-									<i class="fa fa-link"></i>
+								<a class="btn btn-link btn-xs" href="{{ path("resource_show", {'id': r.id}) }}">
+									<i class="fa fa-angle-right fa-2x"></i>
 								</a>
 							</td>
 						</tr>

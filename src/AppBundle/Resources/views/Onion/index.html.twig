@@ -91,7 +91,7 @@
 					{% for o in onions %}
 						<tr class="onion" data-onion="{{ o.id }}">
 							<td>
-								<a href="{{ path('onion_show', {'hash': o.hash}) }}">
+								<a href="{{ o.url }}" target="_blank" rel="noopener noreferrer">
 									{{ o.hash }}
 								</a>
 							</td>
@@ -106,8 +106,8 @@
 								{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d') : "Never" }}
 							</td>
 							<td class="text-center">
-								<a class="btn btn-default btn-xs" href="{{ o.url }}" target="_blank" rel="noopener noreferrer">
-									<i class="fa fa-link"></i>
+								<a class="btn btn-link btn-xs" href="{{ path('onion_show', {'hash': o.hash}) }}">
+									<i class="fa fa-angle-right fa-2x"></i>
 								</a>
 							</td>
 						</tr>
