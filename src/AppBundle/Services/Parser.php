@@ -40,7 +40,7 @@ class Parser {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 20,
             CURLOPT_CONNECTTIMEOUT => 15,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_TIMEOUT => 60,
             CURLOPT_USERAGENT => $this->userAgents[array_rand($this->userAgents)]
         ));
 
@@ -308,14 +308,14 @@ class Parser {
         $dbOnions = $this->em->getRepository("AppBundle:Onion")->findForHashes($hashes);
         $dbHashes = [];
         foreach($dbOnions as $o) {
-            $onions[] = $o;
+            $onions[$o->getHash()] = $o;
             $dbHashes[] = $o->getHash();
         }
 
         $unknownHashes = array_diff($hashes, $dbHashes);
         $newOnions = $this->createOnionsForHashes($unknownHashes);
-        foreach($newOnions as $onion) {
-            $onions[] = $onion;
+        foreach($newOnions as $o) {
+            $onions[$o->getHash()] = $o;
         }
 
         return $onions;
@@ -329,6 +329,7 @@ class Parser {
             if($this->isOnionHash($hash)) {
                 $onion = new Onion();
                 $onion->setHash($hash);
+
                 $onions[] = $onion;
                 $this->em->persist($onion);
 
@@ -407,12 +408,46 @@ class Parser {
         }
 
         $unknownUrls = array_diff($urls, $dbUrls);
-        foreach($unknownUrls as $url) {
-            $resource = $this->getResourceForUrl($url);
-            if($resource) {
-                $resources[] = $resource;
+        $newResources = $this->createResourcesForUrls($unknownUrls);
+        foreach($newResources as $r) {
+            $resources[] = $r;
+        }
+
+        return $resources;
+    }
+
+    public function createResourcesForUrls($urls) {
+        $hashes = [];
+        $urlsPerHash = [];
+
+        foreach($urls as $url) {
+            $hash = $this->isOnionUrl($url, true);
+            if($hash !== false) {
+                $hashes[] = $hash;
+                $urlsPerHash[$hash] = $url;
             }
         }
+
+        $onions = $this->getOnionsForHashes($hashes);
+        $resources = [];
+
+        $i = 0;
+        foreach($urlsPerHash as $hash => $url) {
+            if(isset($onions[$hash])) {
+                $resource = new Resource($url);
+                $resource->setOnion($onions[$hash]);
+
+                $resources[] = $resource;
+                $this->em->persist($resource);
+
+                $i++;
+                if($i%100 == 0) {
+                    $this->em->flush();
+                }
+            }
+        }
+
+        $this->em->flush();
 
         return $resources;
     }

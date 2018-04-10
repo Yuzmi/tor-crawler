@@ -20,6 +20,8 @@ class Resource
     private $onion;
     private $errors;
     private $resourceWords;
+    private $totalSuccess;
+    private $countErrors;
 
     public function __construct($url = null) {
         $this->errors = new ArrayCollection();
@@ -287,11 +289,6 @@ class Resource
     {
         return $this->onion;
     }
-    /**
-     * @var integer
-     */
-    private $countErrors;
-
 
     /**
      * Set countErrors
@@ -316,11 +313,6 @@ class Resource
     {
         return $this->countErrors;
     }
-    /**
-     * @var integer
-     */
-    private $totalSuccess;
-
 
     /**
      * Set totalSuccess
