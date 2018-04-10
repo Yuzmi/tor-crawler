@@ -27,35 +27,39 @@ class ParseFilesCommand extends ContainerAwareCommand {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
-        $dir = realpath(__DIR__."/../../../var/files");
-
         $file = trim($input->getArgument("file"));
         if($file) {
             $files = [$file];
         } else {
-            $files = scandir($dir);
+            $files = [];
+
+            $dirFiles = scandir(realpath(__DIR__."/../../../var/files"));
+            if($dirFiles !== false) {
+                foreach($dirFiles as $filename) {
+                    if(preg_match("#^[0-9a-f]{32,40}\.json$#i", $filename)) {
+                        $files[] = $dir."/".$file;
+                    }
+                }
+            }
         }
         
         foreach($files as $file) {
-            if(preg_match("#^[0-9a-f]{32,40}\.json$#i", $file)) {
-                $path = $dir."/".$file;
-                if(file_exists($path)) {
-                    $json = file_get_contents($path);
-                    if($json !== false) {
-                        $data = json_decode($json, true);
-                        if(is_array($data)) {
-                            $timestamp = strtotime($data["dateUTC"]);
-                            $data["date"] = $timestamp !== false ? new \DateTime("@".$timestamp) : null;
-                            if($data["date"]) {
-                                date_timezone_set($data["date"], new \DateTimeZone(date_default_timezone_get()));
+            if(file_exists($file)) {
+                $json = file_get_contents($file);
+                if($json !== false) {
+                    $data = json_decode($json, true);
+                    if(is_array($data)) {
+                        $timestamp = strtotime($data["dateUTC"]);
+                        $data["date"] = $timestamp !== false ? new \DateTime("@".$timestamp) : null;
+                        if($data["date"]) {
+                            date_timezone_set($data["date"], new \DateTimeZone(date_default_timezone_get()));
 
-                                $this->parser->parseUrl($data["url"], ["data" => $data]);
-                            }
+                            $this->parser->parseUrl($data["url"], ["data" => $data]);
                         }
                     }
-
-                    @unlink($path);
                 }
+
+                @unlink($file);
             }
         }
     }

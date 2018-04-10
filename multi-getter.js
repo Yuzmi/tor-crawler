@@ -49,7 +49,7 @@ function getUrls(callback) {
 		gettingUrls = true;
 	}
 
-	var command = "php bin/console app:get:urls "+chunkSize+" "+(chunkSize*iChunk);
+	var command = "php "+__dirname+"/bin/console app:get:urls "+chunkSize+" "+(chunkSize*iChunk);
 	if(filter) command += " -f "+filter;
 	if(order) command += " -o "+order;
 
@@ -157,7 +157,7 @@ function getUrlContent(iT, url, callback) {
 
 function saveUrlResult(iT, url, result) {
 	var filename = hash(url)+".json";
-	fs.writeFile("var/files/"+filename, JSON.stringify(result), function(errFs) {
+	fs.writeFile(__dirname+"/var/files/"+filename, JSON.stringify(result), function(errFs) {
 		if(errFs) {
 			console.log(errFs);
 		} else {
@@ -178,7 +178,8 @@ function hash(data) {
 }
 
 function parseFile(file, callback) {
-	cmd.get("php bin/console app:parse:files "+file, function(err, data, stderr) {
+	var command = "php "+__dirname+"/bin/console app:parse:files "+__dirname+"/var/files/"+file;
+	cmd.get(command, function(err, data, stderr) {
 		if(err) {
 			console.log(err);
 		}
