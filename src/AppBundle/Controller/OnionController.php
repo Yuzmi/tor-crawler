@@ -10,13 +10,15 @@ class OnionController extends BaseController {
     		->select("o, r")
     		->leftJoin("o.resource", 'r');
 
-    	$type = $request->query->get("type", "all");
+    	$type = $request->query->get("type", "active");
     	if($type == "seen") {
     		$qb->andWhere("r.dateFirstSeen IS NOT NULL");
     	} elseif($type == "unseen") {
     		$qb->andWhere("r.dateFirstSeen IS NULL");
     	} else {
-    		$type = "all";
+    		$type = "active";
+            $qb->andWhere("r.dateLastSeen >= :sevenDaysAgo");
+            $qb->setParameter("sevenDaysAgo", new \DateTime("7 days ago"));
     	}
 
         $q = trim($request->query->get("q"));

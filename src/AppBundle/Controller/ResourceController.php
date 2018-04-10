@@ -9,15 +9,6 @@ class ResourceController extends BaseController {
         $qb = $this->getRepo("Resource")->createQueryBuilder("r")
             ->select("r");
 
-        $type = $request->query->get("type", "all");
-        if($type == "seen") {
-            $qb->andWhere("r.dateFirstSeen IS NOT NULL");
-        } elseif($type == "unseen") {
-            $qb->andWhere("r.dateFirstSeen IS NULL");
-        } else {
-            $type = "all";
-        }
-
         $q = trim($request->query->get("q"));
         $qf = $request->query->get("qf", "any");
         if($q != '') {
@@ -44,7 +35,6 @@ class ResourceController extends BaseController {
 
         return $this->render("@App/Resource/index.html.twig", [
             "resources" => $resources,
-            "type" => $type,
             "q" => $q,
             "qf" => $qf
         ]);

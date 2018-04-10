@@ -15,7 +15,7 @@
 	<div class="container">
 		<div class="text-center">
 			<form class="form-inline" method="get" action="{{ path(route, routeParams) }}">
-				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="URL or title" style="min-width:50%;">
+				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="URL or title..." style="min-width:50%;">
 				
 				{% set fields = {
 					'any': "Any",
@@ -46,24 +46,7 @@
 			<div class="text-center">
 				{{ knp_pagination_render(resources) }}
 			</div>
-		{% endif %}
 
-		{% set navs = {
-			'all': "All",
-			'seen': "Seen",
-			'unseen': "Never seen"
-		} %}
-		<ul class="nav nav-tabs nav-justified">
-			{% for key,value in navs %}
-				<li {% if type == key %}class="active"{% endif %}>
-					<a href="{{ path(route, routeParams|merge({'type': key})) }}">
-						{{ value }}
-					</a>
-				</li>
-			{% endfor %}
-		</ul>
-
-		{% if resources.totalItemCount > 0 %}
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered table-condensed">
 					{% set ths = {
