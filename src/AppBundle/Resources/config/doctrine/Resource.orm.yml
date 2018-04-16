@@ -44,6 +44,23 @@ AppBundle\Entity\Resource:
         dateError:
             type: datetime
             nullable: true
+    manyToMany:
+        referedResources:
+            targetEntity: Resource
+            inversedBy: refererResources
+            joinTable:
+                name: resource_resource
+                joinColumns:
+                    referer_id:
+                        referencedColumnName: id
+                inverseJoinColumns:
+                    refered_id:
+                        referencedColumnName: id
+            cascade: ["persist", "remove"]
+        refererResources:
+            targetEntity: Resource
+            mappedBy: referedResources
+            cascade: ["remove"]
     manyToOne:
         onion:
             targetEntity: Onion
@@ -51,6 +68,7 @@ AppBundle\Entity\Resource:
             joinColumn:
                 name: onion_id
                 referencedColumnName: id
+            cascade: ["persist"]
     oneToMany:
         errors:
             targetEntity: ResourceError

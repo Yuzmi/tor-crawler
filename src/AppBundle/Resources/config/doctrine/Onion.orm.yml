@@ -12,6 +12,23 @@ AppBundle\Entity\Onion:
             length: 56
         dateCreated:
             type: datetime
+    manyToMany:
+        referedOnions:
+            targetEntity: Onion
+            inversedBy: refererOnions
+            joinTable:
+                name: onion_onion
+                joinColumns:
+                    referer_id:
+                        referencedColumnName: id
+                inverseJoinColumns:
+                    refered_id:
+                        referencedColumnName: id
+            cascade: ["persist", "remove"]
+        refererOnions:
+            targetEntity: Onion
+            mappedBy: referedOnions
+            cascade: ["remove"]
     oneToMany:
         onionWords:
             targetEntity: OnionWord

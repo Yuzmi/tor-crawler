@@ -97,13 +97,13 @@
 							</td>
 							<td>{{ o.resource ? o.resource.title }}</td>
 							<td title="{{ o.dateCreated|date('Y-m-d H:i') }}">
-								{{ o.dateCreated|date('Y-m-d') }}
+								{{ o.dateCreated|ago }}
 							</td>
 							<td title="{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d H:i') }}">
-								{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|date('Y-m-d') : "Never" }}
+								{{ o.resource and o.resource.dateChecked ? o.resource.dateChecked|ago : "Never" }}
 							</td>
 							<td title="{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d H:i') }}">
-								{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|date('Y-m-d') : "Never" }}
+								{{ o.resource and o.resource.dateLastSeen ? o.resource.dateLastSeen|ago : "Never" }}
 							</td>
 							<td class="text-center">
 								<a class="btn btn-link btn-xs" href="{{ path('onion_show', {'hash': o.hash}) }}">

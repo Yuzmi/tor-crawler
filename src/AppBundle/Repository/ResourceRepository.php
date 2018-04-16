@@ -9,9 +9,10 @@ class ResourceRepository extends \Doctrine\ORM\EntityRepository
 {
 	public function findOneByUrl($url) {
 		return $this->createQueryBuilder("r")
+			->select("r, o")
+			->leftJoin("r.onion", "o")
 			->where("r.hashUrl = :hash")
 			->setParameter("hash", hash('sha512', $url))
-			->setMaxResults(1)
 			->getQuery()->getOneOrNullResult();
 	}
 

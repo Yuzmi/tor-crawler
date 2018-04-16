@@ -12,6 +12,8 @@ class Onion
     private $resource;
     private $resources;
     private $onionWords;
+    private $referedOnions;
+    private $refererOnions;
 
     public function __construct() {
         $this->dateCreated = new \DateTime();
@@ -175,5 +177,73 @@ class Onion
     public function getOnionWords()
     {
         return $this->onionWords;
+    }
+
+    /**
+     * Add referedOnion
+     *
+     * @param \AppBundle\Entity\Onion $referedOnion
+     *
+     * @return Onion
+     */
+    public function addReferedOnion(\AppBundle\Entity\Onion $referedOnion)
+    {
+        $this->referedOnions[] = $referedOnion;
+
+        return $this;
+    }
+
+    /**
+     * Remove referedOnion
+     *
+     * @param \AppBundle\Entity\Onion $referedOnion
+     */
+    public function removeReferedOnion(\AppBundle\Entity\Onion $referedOnion)
+    {
+        $this->referedOnions->removeElement($referedOnion);
+    }
+
+    /**
+     * Get referedOnions
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getReferedOnions()
+    {
+        return $this->referedOnions;
+    }
+
+    /**
+     * Add refererOnion
+     *
+     * @param \AppBundle\Entity\Onion $refererOnion
+     *
+     * @return Onion
+     */
+    public function addRefererOnion(\AppBundle\Entity\Onion $refererOnion)
+    {
+        $this->refererOnions[] = $refererOnion;
+
+        return $this;
+    }
+
+    /**
+     * Remove refererOnion
+     *
+     * @param \AppBundle\Entity\Onion $refererOnion
+     */
+    public function removeRefererOnion(\AppBundle\Entity\Onion $refererOnion)
+    {
+        $this->refererOnions->removeElement($refererOnion);
+    }
+
+    /**
+     * Get refererOnions
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRefererOnions()
+    {
+        return $this->refererOnions;
     }
 }

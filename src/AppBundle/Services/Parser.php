@@ -189,6 +189,45 @@ class Parser {
             $resource->setTotalSuccess($resource->getTotalSuccess() + 1);
             $resource->setCountErrors(0);
 
+            // --- Onions --- //
+
+            $onions = $data["onions"];
+
+            // Add new refered onions
+            foreach($onions as $o) {
+                if($resource->getOnion()->getId() != $o->getId()
+                && !$resource->getOnion()->getReferedOnions()->contains($o)) {
+                    $resource->getOnion()->addReferedOnion($o);
+                }
+            }
+
+            // --- Resources --- //
+
+            $resources = $data["resources"];
+
+            $resourceIds = [];
+            foreach($resources as $r) {
+                $resourceIds[] = $r->getId();
+            }
+
+            // Remove obsolete refered resources
+            $referedResources = $resource->getReferedResources();
+            if(count($referedResources) > 0) {
+                foreach($referedResources as $r) {
+                    if(!in_array($r->getId(), $resourceIds)) {
+                        $resource->removeReferedResource($r);
+                    }
+                }
+            }
+
+            // Add new refered resources
+            foreach($resources as $r) {
+                if($resource->getId() != $r->getId()
+                && !$resource->getReferedResources()->contains($r)) {
+                    $resource->addReferedResource($r);
+                }
+            }
+
             // --- Words --- //
 
             // Words in content

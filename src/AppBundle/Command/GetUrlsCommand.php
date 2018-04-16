@@ -39,6 +39,9 @@ class GetUrlsCommand extends ContainerAwareCommand {
             $qb->where("r.dateFirstSeen IS NOT NULL");
         } elseif($filter == "valid") {
             $qb->where("r.dateLastSeen = r.dateChecked");
+        } elseif($filter == "active") {
+            $qb->where("r.dateLastSeen >= :sevenDaysAgo");
+            $qb->setParameter("sevenDaysAgo", new \DateTime("7 days ago"));
         }
 
         // Order

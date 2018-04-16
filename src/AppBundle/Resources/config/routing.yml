@@ -1,6 +1,10 @@
 homepage:
     path: /
-    defaults: { _controller: AppBundle:Onion:index }
+    defaults: { _controller: AppBundle:Default:homepage }
+
+search:
+    path: /search
+    defaults: { _controller: AppBundle:Default:search }
 
 onion:
     resource: "@AppBundle/Resources/config/routing/onion.yml"

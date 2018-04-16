@@ -22,6 +22,8 @@ class Resource
     private $resourceWords;
     private $totalSuccess;
     private $countErrors;
+    private $referedResources;
+    private $refererResources;
 
     public function __construct($url = null) {
         $this->errors = new ArrayCollection();
@@ -404,5 +406,73 @@ class Resource
     public function getResourceWords()
     {
         return $this->resourceWords;
+    }
+
+    /**
+     * Add referedResource
+     *
+     * @param \AppBundle\Entity\Resource $referedResource
+     *
+     * @return Resource
+     */
+    public function addReferedResource(\AppBundle\Entity\Resource $referedResource)
+    {
+        $this->referedResources[] = $referedResource;
+
+        return $this;
+    }
+
+    /**
+     * Remove referedResource
+     *
+     * @param \AppBundle\Entity\Resource $referedResource
+     */
+    public function removeReferedResource(\AppBundle\Entity\Resource $referedResource)
+    {
+        $this->referedResources->removeElement($referedResource);
+    }
+
+    /**
+     * Get referedResources
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getReferedResources()
+    {
+        return $this->referedResources;
+    }
+
+    /**
+     * Add refererResource
+     *
+     * @param \AppBundle\Entity\Resource $refererResource
+     *
+     * @return Resource
+     */
+    public function addRefererResource(\AppBundle\Entity\Resource $refererResource)
+    {
+        $this->refererResources[] = $refererResource;
+
+        return $this;
+    }
+
+    /**
+     * Remove refererResource
+     *
+     * @param \AppBundle\Entity\Resource $refererResource
+     */
+    public function removeRefererResource(\AppBundle\Entity\Resource $refererResource)
+    {
+        $this->refererResources->removeElement($refererResource);
+    }
+
+    /**
+     * Get refererResources
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRefererResources()
+    {
+        return $this->refererResources;
     }
 }

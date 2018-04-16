@@ -80,13 +80,13 @@
 							</td>
 							<td>{{ r.title }}</td>
 							<td title="{{ r.dateCreated|date('Y-m-d H:i') }}">
-								{{ r.dateCreated|date('Y-m-d') }}
+								{{ r.dateCreated|ago }}
 							</td>
 							<td title="{{ r.dateChecked ? r.dateChecked|date('Y-m-d H:i') }}">
-								{{ r.dateChecked ? r.dateChecked|date('Y-m-d') : "Never" }}
+								{{ r.dateChecked ? r.dateChecked|ago : "Never" }}
 							</td>
 							<td title="{{ r.dateLastSeen ? r.dateLastSeen|date('Y-m-d H:i') }}">
-								{{ r.dateLastSeen ? r.dateLastSeen|date('Y-m-d') : "Never" }}
+								{{ r.dateLastSeen ? r.dateLastSeen|ago : "Never" }}
 							</td>
 							<td class="text-center">
 								<a class="btn btn-link btn-xs" href="{{ path("resource_show", {'id': r.id}) }}">

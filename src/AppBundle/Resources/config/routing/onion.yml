@@ -2,6 +2,10 @@ onion_index:
     path: /
     defaults: { _controller: AppBundle:Onion:index }
 
+onion_dump:
+    path: /dump
+    defaults: { _controller: AppBundle:Onion:dump }
+
 onion_show:
     path: /{hash}
     defaults: { _controller: AppBundle:Onion:show }

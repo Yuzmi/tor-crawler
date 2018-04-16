@@ -2,7 +2,9 @@
 
 namespace AppBundle\Controller;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class OnionController extends BaseController {
     public function indexAction(Request $request) {
@@ -51,6 +53,43 @@ class OnionController extends BaseController {
             "q" => $q,
             "qf" => $qf
         ));
+    }
+
+    public function dumpAction(Request $request) {
+        $qb = $this->getRepo("Onion")->createQueryBuilder("o")
+            ->select("o.hash")
+            ->leftJoin("o.resource", "r")
+            ->orderBy("o.hash", "ASC");
+
+        $type = $request->query->get("type", "active");
+        if($type == "active") {
+            $qb->andWhere("r.dateLastSeen >= :sevenDaysAgo");
+            $qb->setParameter("sevenDaysAgo", new \DateTime("7 days ago"));
+        } elseif($type == "seen") {
+            $qb->andWhere("r.dateFirstSeen IS NOT NULL");
+        } elseif($type == "unseen") {
+            $qb->andWhere("r.dateFirstSeen IS NULL");
+        } elseif($type == "unchecked") {
+            $qb->andWhere("r.dateChecked IS NULL");
+        }
+
+        $onions = $qb->getQuery()->getArrayResult();
+
+        $hashes = array_column($onions, "hash");
+
+        $format = $request->query->get("format");
+        if($format == "json") {
+            return new JsonResponse($hashes);
+        } elseif($format == "text" || $format == "txt") {
+            $text = implode("\n", $hashes);
+            $response = new Response($text);
+            $response->headers->set('Content-Type', 'text/plain');
+            return $response;
+        } else {
+            return $this->render("@App/Onion/dump.html.twig", array(
+                "onions" => $onions
+            ));
+        }
     }
 
     public function showAction($hash) {

@@ -9,7 +9,7 @@ class TextExtension extends \Twig_Extension
 			new \Twig_SimpleFilter('shorten', array($this, 'shorten')),
             new \Twig_SimpleFilter('frenchDay', array($this, 'frenchDay')),
             new \Twig_SimpleFilter('frenchMonth', array($this, 'frenchMonth')),
-            new \Twig_SimpleFilter('relativeDate', array($this, 'relativeDate')),
+            new \Twig_SimpleFilter('ago', array($this, 'ago'))
 		);
 	}
 
@@ -87,36 +87,44 @@ class TextExtension extends \Twig_Extension
         return $this->englishToFrenchMonth($date->format('F'));
     }
 
-    public function relativeDate(\DateTime $date) {
+    public function ago(\DateTime $date) {
         $now = new \DateTime();
-        if($now < $date) {
-            return "dans le futur";
+        $diff = $now->diff($date);
+
+        $years = $diff->format("%y");
+        if($years > 1) {
+            return $years." year".($years > 1 ? "s" : "");
         }
 
-        $days = $now->diff($date)->format("%a");
+        $months = $diff->format("%m");
+        if($months > 1) {
+            return $months." month".($months > 1 ? "s" : "");
+        }
+
+        $days = $diff->format("%a");
         if($days > 1) {
-            return "il y a ".$days." jours";
+            return $days." days";
         } elseif($days == 1) {
-            return "hier";
+            return "Yesterday";
         }
 
-        $hours = $now->diff($date)->format("%h");
+        $hours = $diff->format("%h");
         if($hours > 0) {
-            return "il y a ".$hours." heure".($hours > 1 ? "s" : "");
+            return $hours." hour".($hours > 1 ? "s" : "");
         }
 
-        $minutes = $now->diff($date)->format("%i");
+        $minutes = $diff->format("%i");
         if($minutes > 0) {
-            return "il y a ".$minutes." minute".($minutes > 1 ? "s" : "");
+            return $minutes." minute".($minutes > 1 ? "s" : "");
         }
 
-        $seconds = $now->diff($date)->format("%s");
+        $seconds = $diff->format("%s");
         if($seconds > 0) {
-            return "il y a ".$seconds." seconde".($seconds > 1 ? "s" : "");
+            return $seconds." second".($seconds > 1 ? "s" : "");
         } elseif($seconds == 0) {
-            return "à l'instant";
+            return "Now";
         }
 
-        return $date->format("Y-m-d H:i:s");
+        return $date->format("Y-m-d");
     }
 }

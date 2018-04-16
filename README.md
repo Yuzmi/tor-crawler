@@ -13,7 +13,7 @@ sudo a2enmod rewrite && sudo service apache2 restart
 
 # Composer
 bash composer.sh
-composer.phar install 
+php composer.phar install 
 
 # Node packages
 npm install  
