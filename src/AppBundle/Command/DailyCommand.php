@@ -110,6 +110,7 @@ class DailyCommand extends ContainerAwareCommand {
         $iWord = 0;
         $sumCounts = $em->getRepository("AppBundle:Word")->sumCountsPerId();
         $words = $em->getRepository("AppBundle:Word")->findAll();
+        $countWords = count($words);
 
         foreach($words as $w) {
             $word = $em->getRepository("AppBundle:Word")->find($w->getId());
@@ -126,13 +127,11 @@ class DailyCommand extends ContainerAwareCommand {
                 $output->write(".");
             }
             $iWord++;
-            if($iWord%100 == 0) {
+            if($iWord%100 == 0 || $iWord == $countWords) {
                 $em->flush();
                 $em->clear();
             }
         }
-
-        $em->flush();
 
         $output->writeln("");
         $output->writeln("End.");

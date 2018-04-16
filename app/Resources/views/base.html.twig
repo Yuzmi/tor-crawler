@@ -66,6 +66,34 @@
                                     Words
                                 </a>
                             </li>
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                    Dump
+                                    <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="{{ path('onion_dump', {'format': "txt", 'type': "active"}) }}">
+                                            Active onions (txt)
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('onion_dump', {'format': "json", 'type': "active"}) }}">
+                                            Active onions (json)
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('onion_dump', {'format': "txt", 'type': "all"}) }}">
+                                            All onions (txt)
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ path('onion_dump', {'format': "json", 'type': "all"}) }}">
+                                            All onions (json)
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>
