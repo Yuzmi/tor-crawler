@@ -2,6 +2,8 @@
 
 namespace AppBundle\Repository;
 
+use AppBundle\Entity\Onion;
+
 class OnionRepository extends \Doctrine\ORM\EntityRepository
 {
 	public function findAll() {
@@ -145,5 +147,13 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		}
 
 		return $counts;
+	}
+
+	public function countRefererOnionsForOnion(Onion $onion) {
+		return $this->createQueryBuilder("o")
+			->select("COUNT(ro)")
+			->leftJoin("o.refererOnions", "ro")
+			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->getQuery()->getSingleScalarResult();
 	}
 }

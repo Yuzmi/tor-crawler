@@ -201,6 +201,14 @@ class Parser {
                 }
             }
 
+            if($resource->getUrl() == $resource->getOnion()->getUrl()) {
+                $countRefered = count($resource->getOnion()->getReferedOnions());
+                $resource->getOnion()->setCountReferedOnions($countRefered);
+
+                $countReferers = $this->em->getRepository("AppBundle:Onion")->countRefererOnionsForOnion($resource->getOnion());
+                $resource->getOnion()->setCountRefererOnions($countReferers);
+            }
+
             // --- Resources --- //
 
             $resources = $data["resources"];
