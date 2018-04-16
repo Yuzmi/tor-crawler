@@ -28,6 +28,8 @@ class Resource
     public function __construct($url = null) {
         $this->errors = new ArrayCollection();
         $this->resourceWords = new ArrayCollection();
+        $this->referedResources = new ArrayCollection();
+        $this->refererResources = new ArrayCollection();
         $this->dateCreated = new \DateTime();
         $this->totalSuccess = 0;
         $this->countErrors = 0;

@@ -212,11 +212,9 @@ class Parser {
 
             // Remove obsolete refered resources
             $referedResources = $resource->getReferedResources();
-            if(count($referedResources) > 0) {
-                foreach($referedResources as $r) {
-                    if(!in_array($r->getId(), $resourceIds)) {
-                        $resource->removeReferedResource($r);
-                    }
+            foreach($referedResources as $r) {
+                if(!in_array($r->getId(), $resourceIds)) {
+                    $resource->removeReferedResource($r);
                 }
             }
 
