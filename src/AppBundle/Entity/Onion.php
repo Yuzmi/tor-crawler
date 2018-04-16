@@ -19,6 +19,8 @@ class Onion
         $this->dateCreated = new \DateTime();
         $this->resources = new ArrayCollection();
         $this->onionWords = new ArrayCollection();
+        $this->referedOnions = new ArrayCollection();
+        $this->refererOnions = new ArrayCollection();
     }
 
     public function __toString() {
