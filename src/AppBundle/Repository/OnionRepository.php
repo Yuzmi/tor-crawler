@@ -79,11 +79,29 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 
 	public function findPopular($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
-			->select("o, r, COUNT(ro.id) AS countReferers")
+			->select("o, r")
 			->leftJoin("o.resource", "r")
-			->leftJoin("o.refererOnions", "ro")
-			->groupBy("o, r")
-			->orderBy("countReferers", "DESC");
+			->orderBy("o.countRefererOnions", "DESC");
+
+		if($limit > 0) {
+			$qb->setMaxResults($limit);
+		}
+
+		$resultOnions = $qb->getQuery()->getResult();
+
+		$onions = [];
+		foreach($resultOnions as $o) {
+			$onions[] = $o;
+		}
+
+		return $onions;
+	}
+
+	public function findListings($limit = 0) {
+		$qb = $this->createQueryBuilder("o")
+			->select("o, r")
+			->leftJoin("o.resource", "r")
+			->orderBy("o.countReferedOnions", "DESC");
 
 		if($limit > 0) {
 			$qb->setMaxResults($limit);
@@ -97,5 +115,35 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		}
 
 		return $onions;
+	}
+
+	public function countReferedOnionsPerId() {
+		$result = $this->createQueryBuilder("o")
+			->select("o.id AS id, COUNT(ro.id) AS countRefered")
+			->leftJoin("o.referedOnions", "ro")
+			->groupBy("o.id")
+			->getQuery()->getResult();
+
+		$counts = [];
+		foreach($result as $row) {
+			$counts[$row["id"]] = $row["countRefered"];
+		}
+
+		return $counts;
+	}
+
+	public function countRefererOnionsPerId() {
+		$result = $this->createQueryBuilder("o")
+			->select("o.id AS id, COUNT(ro.id) AS countReferer")
+			->leftJoin("o.refererOnions", "ro")
+			->groupBy("o.id")
+			->getQuery()->getResult();
+
+		$counts = [];
+		foreach($result as $row) {
+			$counts[$row["id"]] = $row["countReferer"];
+		}
+
+		return $counts;
 	}
 }

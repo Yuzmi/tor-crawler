@@ -14,6 +14,8 @@ class Onion
     private $onionWords;
     private $referedOnions;
     private $refererOnions;
+    private $countReferedOnions;
+    private $countRefererOnions;
 
     public function __construct() {
         $this->dateCreated = new \DateTime();
@@ -21,6 +23,8 @@ class Onion
         $this->onionWords = new ArrayCollection();
         $this->referedOnions = new ArrayCollection();
         $this->refererOnions = new ArrayCollection();
+        $this->countReferedOnions = 0;
+        $this->countRefererOnions = 0;
     }
 
     public function __toString() {
@@ -247,5 +251,53 @@ class Onion
     public function getRefererOnions()
     {
         return $this->refererOnions;
+    }
+
+    /**
+     * Set countReferedOnions
+     *
+     * @param integer $countReferedOnions
+     *
+     * @return Onion
+     */
+    public function setCountReferedOnions($countReferedOnions)
+    {
+        $this->countReferedOnions = $countReferedOnions;
+
+        return $this;
+    }
+
+    /**
+     * Get countReferedOnions
+     *
+     * @return integer
+     */
+    public function getCountReferedOnions()
+    {
+        return $this->countReferedOnions;
+    }
+
+    /**
+     * Set countRefererOnions
+     *
+     * @param integer $countRefererOnions
+     *
+     * @return Onion
+     */
+    public function setCountRefererOnions($countRefererOnions)
+    {
+        $this->countRefererOnions = $countRefererOnions;
+
+        return $this;
+    }
+
+    /**
+     * Get countRefererOnions
+     *
+     * @return integer
+     */
+    public function getCountRefererOnions()
+    {
+        return $this->countRefererOnions;
     }
 }

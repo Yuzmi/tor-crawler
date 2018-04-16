@@ -31,7 +31,7 @@
 			<div class="col-sm-6">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						Last added
+						New onions
 					</div>
 					<table class="table table-striped">
 						{% for onion in addedOnions %}
@@ -39,10 +39,19 @@
 								<td title="{{ onion.dateCreated|date("Y-m-d H:i") }}">
 									{{ onion.dateCreated|ago }}
 								</td>
-								<td title="{{ onion.resource ? onion.resource.title }}">
+								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
 									<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
-										{{ onion.hash|shorten(40) }}
+										{{ onion.hash|shorten(30) }}
 									</a>
+								</td>
+								<td class="text-center">
+									{% if not onion.resource or not onion.resource.dateChecked %}
+										<i class="fa fa-question text-muted"></i>
+									{% elseif onion.resource and onion.resource.dateChecked == onion.resource.dateLastSeen %}
+										<i class="fa fa-check text-success"></i>
+									{% else %}
+										<i class="fa fa-times text-danger"></i>
+									{% endif %}
 								</td>
 							</tr>
 						{% endfor %}
@@ -52,18 +61,25 @@
 			<div class="col-sm-6">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						Last checked
+						Last checked onions
 					</div>
 					<table class="table table-striped">
 						{% for onion in checkedOnions %}
 							<tr>
 								<td title="{{ onion.resource ? onion.resource.dateChecked|date("Y-m-d H:i") }}">
-									{{ onion.resource ? onion.resource.dateChecked|ago }}
+									{{ onion.resource ? onion.resource.dateChecked|ago : "~" }}
 								</td>
-								<td title="{{ onion.resource ? onion.resource.title }}">
+								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
 									<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
-										{{ onion.hash|shorten(40) }}
+										{{ onion.hash|shorten(30) }}
 									</a>
+								</td>
+								<td class="text-center">
+									{% if onion.resource and onion.resource.dateChecked == onion.resource.dateLastSeen %}
+										<i class="fa fa-check text-success"></i>
+									{% else %}
+										<i class="fa fa-times text-danger"></i>
+									{% endif %}
 								</td>
 							</tr>
 						{% endfor %}

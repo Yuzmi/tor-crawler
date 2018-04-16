@@ -65,8 +65,8 @@ php bin/console app:update:words
 ----
 
 ```
-# Update words
-0 0 * * * php /var/www/tor-crawler/bin/console app:update:words
+# Daily routine
+0 0 * * * php /var/www/tor-crawler/bin/console app:daily
 
 # Parse onions
 0 12 * * * nodejs /var/www/tor-crawler/multi-getter.js

@@ -10,6 +10,10 @@ AppBundle\Entity\Onion:
         hash:
             type: string
             length: 56
+        countReferedOnions:
+            type: integer
+        countRefererOnions:
+            type: integer
         dateCreated:
             type: datetime
     manyToMany:

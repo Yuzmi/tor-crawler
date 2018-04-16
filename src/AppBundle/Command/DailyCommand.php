@@ -8,17 +8,46 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use AppBundle\Entity\OnionWord;
 
-class UpdateWordsCommand extends ContainerAwareCommand {
+class DailyCommand extends ContainerAwareCommand {
     protected function configure() {
         $this
-            ->setName('app:update:words')
-            ->setDescription('Update Word and OnionWord entries')
+            ->setName('app:daily')
+            ->setDescription('Update things')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
     	$em = $this->getContainer()->get('doctrine')->getManager();
 
+        // --- Update Onions --- //
+
+        $output->writeln("Updating Onions...");
+
+        $iOnion = 0;
+        $onionIds = $em->getRepository("AppBundle:Onion")->findIds();
+        $countOnions = count($onionIds);
+        $countReferedPerOnion = $em->getRepository("AppBundle:Onion")->countReferedOnionsPerId();
+        $countRefererPerOnion = $em->getRepository("AppBundle:Onion")->countRefererOnionsPerId();
+
+        foreach($onionIds as $onionId) {
+            $onion = $em->getRepository("AppBundle:Onion")->find($onionId);
+            if($onion) {
+                $onion->setCountReferedOnions($countReferedPerOnion[$onion->getId()]);
+                $onion->setCountRefererOnions($countRefererPerOnion[$onion->getId()]);
+                $em->persist($onion);
+            }
+
+            $iOnion++;
+            if($iOnion%100 == 0 || $iOnion == $countOnions) {
+                $em->flush();
+                $em->clear();
+                $output->write(".");
+            }
+        }
+
+        // --- Update OnionWords --- //
+
+        $output->writeln("");
         $output->writeln("Updating OnionWords...");
 
         $iOnion = 0;
@@ -72,6 +101,8 @@ class UpdateWordsCommand extends ContainerAwareCommand {
             }
             $iOnion++;
         }
+
+        // --- Update Words --- //
 
         $output->writeln("");
         $output->writeln("Updating Words...");
