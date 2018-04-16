@@ -87,40 +87,64 @@ class TextExtension extends \Twig_Extension
         return $this->englishToFrenchMonth($date->format('F'));
     }
 
-    public function ago(\DateTime $date) {
+    public function ago(\DateTime $date, $short = false) {
         $now = new \DateTime();
         $diff = $now->diff($date);
 
         $years = $diff->format("%y");
         if($years > 1) {
-            return $years." year".($years > 1 ? "s" : "");
+            if($short) {
+                return $years."y";
+            } else {
+                return $years." year".($years > 1 ? "s" : "");
+            }
         }
 
         $months = $diff->format("%m");
         if($months > 1) {
-            return $months." month".($months > 1 ? "s" : "");
+            if($short) {
+                return $months."mo.";
+            } else {
+                return $months." month".($months > 1 ? "s" : "");
+            }
         }
 
         $days = $diff->format("%a");
         if($days > 1) {
-            return $days." days";
+            if($short) {
+                return $days."d";
+            } else {
+                return $days." days";
+            }
         } elseif($days == 1) {
-            return "Yesterday";
+            return $short ? "Yes." : "Yesterday";
         }
 
         $hours = $diff->format("%h");
         if($hours > 0) {
-            return $hours." hour".($hours > 1 ? "s" : "");
+            if($short) {
+                return $hours."h";
+            } else {
+                return $hours." hour".($hours > 1 ? "s" : "");
+            }
         }
 
         $minutes = $diff->format("%i");
         if($minutes > 0) {
-            return $minutes." minute".($minutes > 1 ? "s" : "");
+            if($short) {
+                return $minutes."m";
+            } else {
+                return $minutes." minute".($minutes > 1 ? "s" : "");
+            }
         }
 
         $seconds = $diff->format("%s");
         if($seconds > 0) {
-            return $seconds." second".($seconds > 1 ? "s" : "");
+            if($short) {
+                return $seconds."s";
+            } else {
+                return $seconds." second".($seconds > 1 ? "s" : "");
+            }
         } elseif($seconds == 0) {
             return "Now";
         }

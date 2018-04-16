@@ -79,6 +79,20 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		return $qb->getQuery()->getResult();
 	}
 
+	public function findLastSeen($limit = 0) {
+		$qb = $this->createQueryBuilder("o")
+			->select("o, r")
+			->leftJoin("o.resource", "r")
+			->where("r.dateLastSeen IS NOT NULL")
+			->orderBy("r.dateLastSeen", "DESC");
+
+		if($limit > 0) {
+			$qb->setMaxResults($limit);
+		}
+
+		return $qb->getQuery()->getResult();
+	}
+
 	public function findPopular($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")

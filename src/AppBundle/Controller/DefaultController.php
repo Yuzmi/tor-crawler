@@ -9,6 +9,7 @@ class DefaultController extends BaseController {
     public function homepageAction(Request $request) {
         $addedOnions = $this->getRepo("Onion")->findLastAdded(10);
         $checkedOnions = $this->getRepo("Onion")->findLastChecked(10);
+        $seenOnions = $this->getRepo("Onion")->findLastSeen(10);
         $popularOnions = $this->getRepo("Onion")->findPopular(20);
 
         $searchForm = $this->createSearchForm();
@@ -16,6 +17,7 @@ class DefaultController extends BaseController {
         return $this->render("@App/Default/homepage.html.twig", array(
         	"addedOnions" => $addedOnions,
             "checkedOnions" => $checkedOnions,
+            "seenOnions" => $seenOnions,
             "popularOnions" => $popularOnions,
             "searchForm" => $searchForm->createView()
         ));
