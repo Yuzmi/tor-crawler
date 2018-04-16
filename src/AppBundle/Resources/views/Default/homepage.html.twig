@@ -41,7 +41,7 @@
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title }}">
 									<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
-										{{ onion.hash }}
+										{{ onion.hash|shorten(40) }}
 									</a>
 								</td>
 							</tr>
@@ -62,7 +62,7 @@
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title }}">
 									<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
-										{{ onion.hash }}
+										{{ onion.hash|shorten(40) }}
 									</a>
 								</td>
 							</tr>
