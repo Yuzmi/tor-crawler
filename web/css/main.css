@@ -1,0 +1,12 @@
+body > .alert {
+	margin-bottom:0;
+}
+
+.table > tbody > tr > td,
+.table > thead > tr > th {
+	vertical-align: middle;
+}
+
+h1 a:hover, h1 a:focus {
+	text-decoration:none;
+}

@@ -93,10 +93,11 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		return $qb->getQuery()->getResult();
 	}
 
-	public function findPopular($limit = 0) {
+	public function findMostRefered($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")
 			->leftJoin("o.resource", "r")
+			->where("r.dateLastSeen IS NOT NULL")
 			->orderBy("o.countRefererOnions", "DESC");
 
 		if($limit > 0) {
@@ -117,6 +118,7 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")
 			->leftJoin("o.resource", "r")
+			->where("r.dateLastSeen IS NOT NULL")
 			->orderBy("o.countReferedOnions", "DESC");
 
 		if($limit > 0) {

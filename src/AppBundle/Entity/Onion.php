@@ -32,7 +32,7 @@ class Onion
     }
 
     public function getUrl($ssl = false) {
-        return "http".($ssl ? 's' : '')."://".$this->hash.".onion";
+        return "http".($ssl ? 's' : '')."://".$this->hash.".onion/";
     }
 
     /**
@@ -54,7 +54,7 @@ class Onion
      */
     public function setHash($hash)
     {
-        $this->hash = $hash;
+        $this->hash = strtolower($hash);
 
         return $this;
     }

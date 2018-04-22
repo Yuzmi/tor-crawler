@@ -188,7 +188,8 @@ class ParseCommand extends ContainerAwareCommand {
             }
 
             $url = $dataUrl["url"];
-
+            $urlDomain = parse_url($url, PHP_URL_HOST);
+            
             $i++;
             $output->write($i."/".count($urls)." : ".$url);
 
@@ -198,10 +199,10 @@ class ParseCommand extends ContainerAwareCommand {
                 continue;
             }
 
-            foreach($data["onions"] as $onion) {
-                if(!in_array($onion->getUrl(), $urls)) {
-                    $urls[] = $onion->getUrl();
-                    if($discover) {
+            if($discover) {
+                foreach($data["onions"] as $onion) {
+                    if(!in_array($onion->getUrl(), $urls)) {
+                        $urls[] = $onion->getUrl();
                         if($mode == "deep") {
                             array_unshift($parseUrls, [
                                 "url" => $onion->getUrl(),
@@ -220,8 +221,14 @@ class ParseCommand extends ContainerAwareCommand {
             $newDepth = $dataUrl["depth"] + 1;
             if($newDepth <= $maxDepth) {
                 foreach($data["resources"] as $resource) {
-                    if(!in_array($resource->getUrl(), $urls)) {
-                        $urls[] = $resource->getUrl();
+                    $resourceUrl = $resource->getUrl();
+
+                    if(!$discover && parse_url($resourceUrl, PHP_URL_HOST) != $urlDomain) {
+                        continue;
+                    }
+
+                    if(!in_array($resourceUrl, $urls)) {
+                        $urls[] = $resourceUrl;
                         if($mode == "deep") {
                             array_unshift($parseUrls, [
                                 "url" => $resource->getUrl(),

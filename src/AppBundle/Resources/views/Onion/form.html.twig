@@ -1,0 +1,47 @@
+<form class="text-center" method="get" action="{{ path('onion_index') }}">
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="form-group">
+				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="Onion or title...">
+			</div>
+		</div>
+		<div class="col-xs-6">
+			{% set fields = {
+				'any': "Any",
+				'onion': "Onion",
+				'title': "Title"
+			} %}
+			<div class="form-group">
+				<select class="form-control" name="qf">
+					{% for key,value in fields %}
+						<option value="{{ key }}" {{ qf is defined and qf == key ? "selected" }}>
+							{{ value }}
+						</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-xs-6">
+			{% set types = {
+				'active': "Active",
+				'all': "All",
+				'seen': "Seen",
+				'unseen': "Never seen"
+			} %}
+			<div class="form-group">
+				<select class="form-control" name="qt">
+					{% for key,value in types %}
+						<option value="{{ key }}" {{ qt is defined and qt == key ? "selected" }}>
+							{{ value }}
+						</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<button class="btn btn-primary btn-block" type="submit">
+				Filter
+			</button>
+		</div>
+	</div>
+</form>

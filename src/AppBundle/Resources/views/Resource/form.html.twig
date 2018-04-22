@@ -1,0 +1,30 @@
+<form class="text-center" method="get" action="{{ path('resource_index') }}">
+	<div class="row">
+		<div class="col-xs-12 col-sm-9">
+			<div class="form-group">
+				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="URL or title...">
+			</div>
+		</div>
+		<div class="col-xs-12 col-sm-3">
+			{% set fields = {
+				'any': "Any",
+				'url': "URL",
+				'title': "Title"
+			} %}
+			<div class="form-group">
+				<select class="form-control" name="qf">
+					{% for key,value in fields %}
+						<option value="{{ key }}" {{ qf is defined and qf == key ? "selected" }}>
+							{{ value }}
+						</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<button class="btn btn-primary btn-block" type="submit">
+				Filter
+			</button>
+		</div>
+	</div>
+</form>

@@ -26,7 +26,8 @@ class Parser {
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:7.0.1) Gecko/20100101 Firefox/7.0.12",
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:21.0) Gecko/20130330 Firefox/21.0",
-        "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0"
+        "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0",
+        "Mozilla/5.0 (Windows NT 6.1; rv:52.0) Gecko/20100101 Firefox/52.0"
     ];
 
     // https://stackoverflow.com/questions/15445285
@@ -114,7 +115,7 @@ class Parser {
             $data["onions"] = $this->getOnionsForHashes($data["onion-hashes"]);
 
             // Get resources from content
-            $data["onion-urls"] = $this->htmlParser->getOnionUrlsFromHtml($data["content"]);
+            $data["onion-urls"] = $this->htmlParser->getOnionUrlsFromHtml($data["content"], $url);
             $data["resources"] = $this->getResourcesForUrls($data["onion-urls"]);
         }
 

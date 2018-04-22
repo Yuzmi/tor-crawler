@@ -42,7 +42,7 @@
 									{{ onion.dateCreated|ago(true) }}
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
-									<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
+									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
 										{{ onion.hash|shorten(20) }}
 									</a>
 								</td>
@@ -74,7 +74,7 @@
 									{{ onion.resource ? onion.resource.dateChecked|ago(true) : "~" }}
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
-									<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
+									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
 										{{ onion.hash|shorten(20) }}
 									</a>
 								</td>
@@ -104,7 +104,7 @@
 									{{ onion.resource ? onion.resource.dateLastSeen|ago(true) : "~" }}
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
-									<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
+									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
 										{{ onion.hash|shorten(20) }}
 									</a>
 								</td>
@@ -127,14 +127,16 @@
 				</div>
 			</div>
 			<ul class="list-group">
-				{% for onion in popularOnions %}
+				{% for popOnion in popularOnions %}
 					<li class="list-group-item">
-						<a href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
-							{{ onion.hash }}
-							{% if onion.resource and onion.resource.title %}
-								- <span class="text-muted">{{ onion.resource.title }}</span>
+						<a href="{{ popOnion.url }}">
+							{% if popOnion.onions|length > 1 %}
+								{{ popOnion.onions|length }} onions
+							{% else %}
+								{{ popOnion.onions[0].hash }}
 							{% endif %}
 						</a>
+						- {{ popOnion.title }}
 					</li>
 				{% endfor %}
 			</ul>

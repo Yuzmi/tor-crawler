@@ -56,9 +56,6 @@ nodejs multi-getter.js -t30 # 30s timeout, default: 60
 nodejs multi-getter.js -o url # Order by url/created/unchecked, default: created
 nodejs multi-getter.js -l # Loop
 nodejs multi-getter.js -l -o unchecked --first-only # My favorite
-
-# Update words
-php bin/console app:update:words
 ```
 
 [CRON](https://crontab.guru/)

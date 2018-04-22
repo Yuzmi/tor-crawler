@@ -1,32 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8">
+        <meta charset="utf-8">
         <title>{% block title %}Tor Crawler{% endblock %}</title>
-
-        {# Favicon #}
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
 
-        {# jQuery #}
-        <script src="{{ asset('js/jquery-3.3.1.min.js') }}"></script>
-
-        {# Bootstrap #}
-        <link href="{{ asset('css/bootstrap-3.3.7.min.css') }}" rel="stylesheet">
-        <script src="{{ asset('js/bootstrap-3.3.7.min.js') }}"></script>
-
-        {# Font Awesome #}
-        <link href="{{ asset('css/font-awesome-4.7.0.min.css') }}" rel="stylesheet">
-
         {% block stylesheets %}
-            <style>
-                body > .alert { margin-bottom:0; }
-                .table > tbody > tr > td { vertical-align: middle; }
-            </style>
+            <link href="{{ asset('css/bootstrap-3.3.7.min.css') }}" rel="stylesheet">
+            <link href="{{ asset('css/font-awesome-4.7.0.min.css') }}" rel="stylesheet">
+            <link href="{{ asset('css/main.css') }}" rel="stylesheet">
         {% endblock %}
     </head>
     <body>
         {% block body %}
-            {# Flash messages #}
             {% if app.session.flashbag.peekAll|length > 0 %}
                 {% for type, flash_messages in app.session.flashBag.all %}
                     {% for flash_message in flash_messages %}
@@ -82,6 +68,7 @@
                                             Active onions (json)
                                         </a>
                                     </li>
+                                    <li role="separator" class="divider"></li>
                                     <li>
                                         <a href="{{ path('onion_dump', {'format': "txt", 'type': "all"}) }}">
                                             All onions (txt)
@@ -104,12 +91,15 @@
             <br>
 
             <p class="text-center">
-                <a href="https://github.com/Yuzmi/tor-crawler">
-                    <i class="fa fa-github fa-2x"></i>
+                <a href="https://github.com/Yuzmi/tor-crawler" target="_blank" rel="noopener noreferrer">
+                    <i class="fa fa-github"></i>
                 </a>
             </p>
         {% endblock %}
 
-        {% block javascripts %}{% endblock %}
+        {% block javascripts %}
+            <script src="{{ asset('js/jquery-3.3.1.min.js') }}"></script>
+            <script src="{{ asset('js/bootstrap-3.3.7.min.js') }}"></script>
+        {% endblock %}
     </body>
 </html>

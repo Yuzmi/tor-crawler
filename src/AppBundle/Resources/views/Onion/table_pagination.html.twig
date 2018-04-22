@@ -1,0 +1,62 @@
+<div class="table-responsive">
+	<table class="table table-striped table-bordered table-condensed">
+		<thead>
+			{% set ths = {
+				'o.hash': "Onion",
+				'r.title': "Title",
+				'o.dateCreated': "Added",
+				'r.dateChecked': "Checked",
+				'r.dateLastSeen': "Seen"
+			} %}
+			<tr>
+				<th></th>
+				{% for key,value in ths %}
+					<th>
+						{{ knp_pagination_sortable(onions, value, key) }}
+						{% if onions.isSorted(key) %}
+							{% if onions.direction == "asc" %}
+								<i class="fa fa-caret-down"></i>
+							{% elseif onions.direction == "desc" %}
+								<i class="fa fa-caret-up"></i>
+							{% endif %}
+						{% endif %}
+					</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for onion in onions %}
+				<tr class="onion">
+					<td class="text-center">
+						<a class="btn btn-default btn-xs" href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
+							<i class="fa fa-link"></i>
+						</a>
+					</td>
+					<td>
+						<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
+							{{ onion.hash }}
+						</a>
+					</td>
+					<td>{{ onion.resource ? onion.resource.title }}</td>
+					<td title="{{ onion.dateCreated|date('Y-m-d H:i') }}">
+						{{ onion.dateCreated|ago(true) }}
+					</td>
+					<td title="{{ onion.resource and onion.resource.dateChecked ? onion.resource.dateChecked|date('Y-m-d H:i') }}">
+						{% if onion.resource and onion.resource.dateChecked %}
+							{{ onion.resource.dateChecked|ago(true) }}
+						{% else %}
+							-
+						{% endif %}
+					</td>
+					<td title="{{ onion.resource and onion.resource.dateLastSeen ? onion.resource.dateLastSeen|date('Y-m-d H:i') }}">
+						{% if onion.resource and onion.resource.dateLastSeen %}
+							{{ onion.resource.dateLastSeen|ago(true) }}
+						{% else %}
+							-
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>

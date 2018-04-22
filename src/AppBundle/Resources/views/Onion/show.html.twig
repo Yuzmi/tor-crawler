@@ -15,16 +15,38 @@
 	    <br>
 
 	    <p class="text-center">
-	    	<a class="btn btn-default" href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
+	    	<a class="btn btn-primary btn-lg" href="{{ onion.url }}" target="_blank" rel="noopener noreferrer">
 	    		<i class="fa fa-link"></i>
 	    		Direct link
 	    	</a>
 	    </p>
 
+	    <br>
+
+	    <div class="panel panel-primary">
+	    	<div class="panel-heading">
+	    		<div class="panel-title">Information</div>
+	    	</div>
+			<table class="table">
+				<tr>
+					<th>Creation</th>
+					<td>{{ onion.dateCreated|date('Y-m-d') }}</td>
+				</tr>
+				<tr>
+					<th>Last check</th>
+					<td>{{ onion.resource ? onion.resource.dateChecked|date('Y-m-d') : "-" }}</td>
+				</tr>
+				<tr>
+					<th>Last seen</th>
+					<td>{{ onion.resource ? onion.resource.dateLastSeen|date('Y-m-d') : "-" }}</td>
+				</tr>
+			</table>
+		</div>
+
 		{% if countOnionWords > 0 %}
 			<br>
 
-			<div class="panel panel-default">
+			<div class="panel panel-primary">
 				<div class="panel-heading">
 		    		<div class="panel-title">
 		    			Words ({{ countOnionWords }})
@@ -48,7 +70,7 @@
 		{% if countResources > 0 %}
 			<br>
 
-			<div class="panel panel-default">
+			<div class="panel panel-primary">
 		    	<div class="panel-heading">
 		    		<div class="panel-title">
 		    			URLs ({{ countResources }})

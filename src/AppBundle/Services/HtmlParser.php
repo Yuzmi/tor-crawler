@@ -2,6 +2,9 @@
 
 namespace AppBundle\Services;
 
+use Symfony\Component\DomCrawler\Crawler;
+use AppBundle\Services\phpUri;
+
 class HtmlParser {
 	public function getTitleFromHtml($html) {
         $title = null;
@@ -17,36 +20,41 @@ class HtmlParser {
         return $title;
     }
 
-    public function getUrlsFromHtml($html) {
+    public function getUrlsFromHtml($html, $htmlUrl = null) {
         $urls = array();
 
-        preg_match_all('#<a[^>]*href="(.*)"[^>]*>#isU', $html, $matches);
+        $crawler = new Crawler($html);
+        $linkNodes = $crawler->filter("a");
+        
+        for($i=0, $count = count($linkNodes);$i<$count;$i++) {
+            $url = trim($linkNodes->eq($i)->attr("href"));
 
-        foreach($matches[1] as $url) {
             if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
                 $urls[] = $url;
-            }
-        }
-
-        return array_unique($urls);
-    }
-
-    public function getOnionUrlsFromHtml($html) {
-        $urls = array();
-
-        preg_match_all('#<a[^>]*href="(.*)"[^>]*>#isU', $html, $matches);
-
-        foreach($matches[1] as $url) {
-            $url = trim($url);
-            if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
-                $hostname = parse_url($url, PHP_URL_HOST);
-                if($hostname !== false && preg_match('#\.onion$#isU', $hostname)) {
+            } elseif($htmlUrl) {
+                // Relative to absolute URL
+                $url = phpUri::parse($htmlUrl)->join($url);
+                if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
                     $urls[] = $url;
                 }
             }
         }
 
         return array_unique($urls);
+    }
+
+    public function getOnionUrlsFromHtml($html, $htmlUrl = null) {
+        $onionUrls = [];
+
+        $urls = $this->getUrlsFromHtml($html, $htmlUrl);
+        foreach($urls as $url) {
+            $hostname = parse_url($url, PHP_URL_HOST);
+            if($hostname !== false && preg_match('#\.onion$#isU', $hostname)) {
+                $onionUrls[] = $url;
+            }
+        }
+
+        return $onionUrls;
     }
 
     public function getOnionHashesFromContent($content) {
@@ -95,7 +103,6 @@ class HtmlParser {
     	if(empty($html)) return "";
 
     	$doc = new \DOMDocument();
-
     	libxml_use_internal_errors(true);
     	$doc->loadHtml($html);
 

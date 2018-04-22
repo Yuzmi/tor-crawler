@@ -10,7 +10,30 @@ class DefaultController extends BaseController {
         $addedOnions = $this->getRepo("Onion")->findLastAdded(10);
         $checkedOnions = $this->getRepo("Onion")->findLastChecked(10);
         $seenOnions = $this->getRepo("Onion")->findLastSeen(10);
-        $popularOnions = $this->getRepo("Onion")->findPopular(20);
+
+        $popularOnions = [];
+        $mostReferedOnions = $this->getRepo("Onion")->findMostRefered(30);
+        foreach($mostReferedOnions as $onion) {
+            $title = $onion->getResource() ? $onion->getResource()->getTitle() : null;
+            if($title) {
+                if(!isset($popularOnions[$title])) {
+                    $popularOnions[$title] = [
+                        "title" => $title,
+                        "url" => $this->generateUrl("onion_show", [
+                            "hash" => $onion->getHash()
+                        ]),
+                        "onions" => [$onion]
+                    ];
+                } else {
+                    $popularOnions[$title]["url"] = $this->generateUrl("onion_index", [
+                        "q" => $title,
+                        "sort" => "o.countRefererOnions",
+                        "direction" => "DESC"
+                    ]);
+                    $popularOnions[$title]["onions"][] = $onion;
+                }
+            }
+        }
 
         $searchForm = $this->createSearchForm();
 

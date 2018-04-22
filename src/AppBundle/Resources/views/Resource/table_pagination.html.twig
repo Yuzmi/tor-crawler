@@ -1,0 +1,62 @@
+<div class="table-responsive">
+	<table class="table table-striped table-bordered table-condensed">
+		<thead>
+			{% set ths = {
+				'r.url': "URL",
+				'r.title': "Title",
+				'r.dateCreated': "Added",
+				'r.dateChecked': "Checked",
+				'r.dateLastSeen': "Seen"
+			} %}
+			<tr>
+				<th></th>
+				{% for key,value in ths %}
+					<th>
+						{{ knp_pagination_sortable(resources, value, key) }}
+						{% if resources.isSorted(key) %}
+							{% if resources.direction == "asc" %}
+								<i class="fa fa-caret-down"></i>
+							{% elseif resources.direction == "desc" %}
+								<i class="fa fa-caret-up"></i>
+							{% endif %}
+						{% endif %}
+					</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for r in resources %}
+				<tr class="resource">
+					<td class="text-center">
+						<a class="btn btn-default btn-xs" href="{{ r.url }}" target="_blank" rel="noopener noreferrer">
+							<i class="fa fa-link"></i>
+						</a>
+					</td>
+					<td>
+						<a href="{{ path('resource_show', {'id': r.id}) }}">
+							{{ r.url }}
+						</a>
+					</td>
+					<td>{{ r.title }}</td>
+					<td title="{{ r.dateCreated|date('Y-m-d H:i') }}">
+						{{ r.dateCreated|ago(true) }}
+					</td>
+					<td title="{{ r.dateChecked ? r.dateChecked|date('Y-m-d H:i') }}">
+						{% if r.dateChecked %}
+							{{ r.dateChecked|ago(true) }}
+						{% else %}
+							-
+						{% endif %}
+					</td>
+					<td title="{{ r.dateLastSeen ? r.dateLastSeen|date('Y-m-d H:i') }}">
+						{% if r.dateLastSeen %}
+							{{ r.dateLastSeen|ago(true) }}
+						{% else %}
+							-
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>

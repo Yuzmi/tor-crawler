@@ -12,13 +12,15 @@ class OnionController extends BaseController {
     		->select("o, r")
     		->leftJoin("o.resource", 'r');
 
-    	$type = $request->query->get("type", "active");
-    	if($type == "seen") {
+    	$qt = $request->query->get("qt", "active");
+    	if($qt == "seen") {
     		$qb->andWhere("r.dateFirstSeen IS NOT NULL");
-    	} elseif($type == "unseen") {
+    	} elseif($qt == "unseen") {
     		$qb->andWhere("r.dateFirstSeen IS NULL");
-    	} else {
-    		$type = "active";
+    	} elseif($qt == "all") {
+            // Do nothing, get everything
+        } else {
+    		$qt = "active";
             $qb->andWhere("r.dateLastSeen >= :sevenDaysAgo");
             $qb->setParameter("sevenDaysAgo", new \DateTime("7 days ago"));
     	}
@@ -49,9 +51,9 @@ class OnionController extends BaseController {
 
         return $this->render("@App/Onion/index.html.twig", array(
         	"onions" => $onions,
-        	"type" => $type,
             "q" => $q,
-            "qf" => $qf
+            "qf" => $qf,
+            "qt" => $qt
         ));
     }
 
@@ -80,16 +82,12 @@ class OnionController extends BaseController {
         $format = $request->query->get("format");
         if($format == "json") {
             return new JsonResponse($hashes);
-        } elseif($format == "text" || $format == "txt") {
-            $text = implode("\n", $hashes);
-            $response = new Response($text);
-            $response->headers->set('Content-Type', 'text/plain');
-            return $response;
-        } else {
-            return $this->render("@App/Onion/dump.html.twig", array(
-                "onions" => $onions
-            ));
         }
+
+        $text = implode("\n", $hashes);
+        $response = new Response($text);
+        $response->headers->set('Content-Type', 'text/plain');
+        return $response;
     }
 
     public function showAction($hash) {

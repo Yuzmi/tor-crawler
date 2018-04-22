@@ -13,35 +13,38 @@
     <br>
 
     <div class="container">
-		<div class="text-center">
-			<form class="form-inline" method="get" action="{{ path(route, routeParams) }}">
-				<input class="form-control" type="text" name="q" value="{{ q }}" placeholder="Word..." style="min-width:50%;">
-				<button class="btn btn-default" type="submit">Filter</button>
-			</form>
+		<div class="row">
+    		<div class="col-xs-12 col-md-10 col-md-offset-1">
+				{% include "@App/Word/form.html.twig" %}
+			</div>
 		</div>
 
 		<br>
 
-		<div class="text-center">
-			{{ words.totalItemCount }} word{{ words.totalItemCount > 1 ? "s" }}
-		</div>
+		{% if words.totalItemCount > 0 %}
+			<p class="text-center">
+				{{ words.totalItemCount }} word{{ words.totalItemCount > 1 ? "s" }}
+			</p>
 
-		<br>
+			<div class="text-center">
+			    {{ knp_pagination_render(words) }}
+			</div>
 
-		<div class="text-center">
-		    {{ knp_pagination_render(words) }}
-		</div>
+			<div style="line-height:3em;text-align:justify;">
+				{% for word in words %}
+					<a class="btn btn-default" href="{{ path('word_show', {'id': word.id}) }}" title="x{{ word.count }}">
+						{{ word.string|escape }}
+					</a>
+				{% endfor %}
+			</div>
 
-		<div style="line-height:3em;text-align:justify;">
-			{% for word in words %}
-				<a class="btn btn-default" href="{{ path('word_show', {'id': word.id}) }}" title="x{{ word.count }}">
-					{{ word.string|escape }}
-				</a>
-			{% endfor %}
-		</div>
-
-		<div class="text-center">
-		    {{ knp_pagination_render(words) }}
-		</div>
+			<div class="text-center">
+			    {{ knp_pagination_render(words) }}
+			</div>
+		{% else %}
+			<div class="alert alert-info">
+				No word found.
+			</div>
+		{% endif %}
 	</div>
 {% endblock %}

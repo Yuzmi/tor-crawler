@@ -29,6 +29,7 @@
 					'rw.counter': "Count"
 				} %}
 				<tr>
+					<th></th>
 					{% for key,value in ths %}
 						<th>
 							{{ knp_pagination_sortable(resourceWords, value, key) }}
@@ -41,22 +42,21 @@
 							{% endif %}
 						</th>
 					{% endfor %}
-					<th></th>
 				</tr>
 				{% for rw in resourceWords %}
 					<tr>
+						<td class="text-center">
+							<a class="btn btn-default btn-xs" href="{{ rw.resource.url }}" target="_blank" rel="noopener noreferrer">
+								<i class="fa fa-link"></i>
+							</a>
+						</td>
 						<td>
-							<a href="{{ rw.resource.url }}" target="_blank" rel="noopener noreferrer">
+							<a href="{{ path('resource_show', {'id': rw.resource.id}) }}">
 								{{ rw.resource.url }}
 							</a>
 						</td>
 						<td>{{ rw.resource.title }}</td>
 						<td>{{ rw.count }}</td>
-						<td>
-							<a class="btn btn-link btn-xs" href="{{ path('resource_show', {'id': rw.resource.id}) }}">
-								<i class="fa fa-angle-right fa-2x"></i>
-							</a>
-						</td>
 					</tr>
 				{% endfor %}
 			</table>
