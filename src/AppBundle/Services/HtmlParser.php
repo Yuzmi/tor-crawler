@@ -29,6 +29,8 @@ class HtmlParser {
         for($i=0, $count = count($linkNodes);$i<$count;$i++) {
             $url = trim($linkNodes->eq($i)->attr("href"));
 
+            $url = str_replace('&shy;', '', $url); // Yeah, it happened
+
             if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
                 $urls[] = $url;
             } elseif($htmlUrl) {
