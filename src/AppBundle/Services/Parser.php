@@ -428,7 +428,12 @@ class Parser {
         }
 
         if($onion) {
-            if(!$onion->getResource() && $onion->getUrl() == $resource->getUrl()) {
+            if((!$onion->getResource() && $onion->getUrl() == $resource->getUrl())
+            || (
+                $onion->getResource() 
+                && $onion->getUrl() != $onion->getResource()->getUrl() 
+                && $onion->getUrl() == $resource->getUrl())
+            ) {
                 $onion->setResource($resource);
                 $this->em->persist($onion);
                 $save = true;
