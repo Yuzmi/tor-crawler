@@ -23,18 +23,17 @@ class HtmlParser {
     public function getUrlsFromHtml($html, $htmlUrl = null) {
         $urls = array();
 
+        $html = str_replace(
+            ["&shy;", "&#173;", "&#xAD;"],
+            "", 
+            $html
+        );
+
         $crawler = new Crawler($html);
         $linkNodes = $crawler->filter("a");
         
         for($i=0, $count = count($linkNodes);$i<$count;$i++) {
             $url = trim($linkNodes->eq($i)->attr("href"));
-
-            $url = str_replace(
-                ["&shy;", "&#173;", "&#xAD;"], // Yeah, it happened
-                "", 
-                $url
-            );
-
             if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
                 $urls[] = $url;
             } elseif($htmlUrl) {
