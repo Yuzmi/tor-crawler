@@ -12,7 +12,7 @@ class DefaultController extends BaseController {
         $seenOnions = $this->getRepo("Onion")->findLastSeen(10);
 
         $popularOnions = [];
-        $mostReferedOnions = $this->getRepo("Onion")->findMostRefered(30);
+        $mostReferedOnions = $this->getRepo("Onion")->findMostRefered(40);
         foreach($mostReferedOnions as $onion) {
             $title = $onion->getResource() ? $onion->getResource()->getTitle() : null;
             if($title) {
