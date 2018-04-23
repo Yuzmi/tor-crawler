@@ -118,28 +118,30 @@
 			</div>
 		</div>
 
-		<br>
+		{% if popularOnions|length > 0 %}
+			<br>
 
-		<div class="panel panel-primary">
-			<div class="panel-heading">
-				<div class="panel-title">
-					Popular onions
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<div class="panel-title">
+						Popular onions
+					</div>
 				</div>
+				<ul class="list-group">
+					{% for popOnion in popularOnions %}
+						<li class="list-group-item">
+							<a href="{{ popOnion.url }}">
+								{% if popOnion.onions|length > 1 %}
+									{{ popOnion.onions|length }} onions
+								{% else %}
+									{{ popOnion.onions[0].hash }}
+								{% endif %}
+							</a>
+							- {{ popOnion.title }}
+						</li>
+					{% endfor %}
+				</ul>
 			</div>
-			<ul class="list-group">
-				{% for popOnion in popularOnions %}
-					<li class="list-group-item">
-						<a href="{{ popOnion.url }}">
-							{% if popOnion.onions|length > 1 %}
-								{{ popOnion.onions|length }} onions
-							{% else %}
-								{{ popOnion.onions[0].hash }}
-							{% endif %}
-						</a>
-						- {{ popOnion.title }}
-					</li>
-				{% endfor %}
-			</ul>
-		</div>
+		{% endif %}
 	</div>
 {% endblock %}
