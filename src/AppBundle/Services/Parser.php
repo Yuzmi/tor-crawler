@@ -427,17 +427,11 @@ class Parser {
             }
         }
 
-        if($onion) {
-            if((!$onion->getResource() && $onion->getUrl() == $resource->getUrl())
-            || (
-                $onion->getResource() 
-                && $onion->getUrl() != $onion->getResource()->getUrl() 
-                && $onion->getUrl() == $resource->getUrl())
-            ) {
-                $onion->setResource($resource);
-                $this->em->persist($onion);
-                $save = true;
-            }
+        if($onion && $onion->getUrl() == $resource->getUrl()
+        && (!$onion->getResource() || $onion->getUrl() != $onion->getResource()->getUrl())) {
+            $onion->setResource($resource);
+            $this->em->persist($onion);
+            $save = true;
         }
 
         if($save) {
@@ -468,25 +462,28 @@ class Parser {
     }
 
     public function createResourcesForUrls($urls) {
-        $hashes = [];
-        $urlsPerHash = [];
+        $dataUrls = [];
+        $onionHashes = [];
 
         foreach($urls as $url) {
-            $hash = $this->isOnionUrl($url, true);
-            if($hash !== false) {
-                $hashes[] = $hash;
-                $urlsPerHash[$hash] = $url;
+            $onionHash = $this->isOnionUrl($url, true);
+            if($onionHash !== false) {
+                $dataUrls[] = [
+                    "url" => $url,
+                    "onionHash" => $onionHash
+                ];
+                $onionHashes[] = $onionHash;
             }
         }
 
-        $onions = $this->getOnionsForHashes($hashes);
+        $onions = $this->getOnionsForHashes($onionHashes);
         $resources = [];
 
         $i = 0;
-        foreach($urlsPerHash as $hash => $url) {
-            if(isset($onions[$hash])) {
-                $resource = new Resource($url);
-                $resource->setOnion($onions[$hash]);
+        foreach($dataUrls as $dataUrl) {
+            if(isset($onions[$dataUrl["onionHash"]])) {
+                $resource = new Resource($dataUrl["url"]);
+                $resource->setOnion($onions[$dataUrl["onionHash"]]);
 
                 $resources[] = $resource;
                 $this->em->persist($resource);
