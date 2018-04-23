@@ -34,14 +34,17 @@ class HtmlParser {
         
         for($i=0, $count = count($linkNodes);$i<$count;$i++) {
             $url = trim($linkNodes->eq($i)->attr("href"));
+
+            // Relative to absolute URL
+            if($htmlUrl && filter_var($url, FILTER_VALIDATE_URL) === false) {
+                $url = phpUri::parse($htmlUrl)->join($url);
+            }
+
+            // Remove the fragment
+            $url = explode('#', $url)[0];
+
             if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
                 $urls[] = $url;
-            } elseif($htmlUrl) {
-                // Relative to absolute URL
-                $url = phpUri::parse($htmlUrl)->join($url);
-                if(filter_var($url, FILTER_VALIDATE_URL) !== false) {
-                    $urls[] = $url;
-                }
             }
         }
 
