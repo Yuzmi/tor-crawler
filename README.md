@@ -46,8 +46,13 @@ php bin/console app:parse
 # Parse onions in database and discover new ones
 php bin/console app:parse --discover
 
-# Parse URL
-php bin/console app:parse http://xxxxxxxxxxxxxxxx.onion
+# Parse URL/hash
+php bin/console app:parse xxxxxxxxxxxxxxxx
+php bin/console app:parse http://xxxxxxxxxxxxxxxx.onion/foobar
+
+# Parse found onion URLs
+php bin/console app:parse xxxxxxxxxxxxxxxx --depth=X # Will follow and parse urls X times, default: 0
+php bin/console app:parse xxxxxxxxxxxxxxxx --depth=3 --mode=deep # Go 'deep', 'wide' or 'random', default: wide
 
 # Parse with Node
 nodejs multi-getter.js
