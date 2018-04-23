@@ -17,7 +17,8 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		return $this->createQueryBuilder("o")
 			->select("o,r")
 			->leftJoin("o.resource", "r")
-			->where("o.hash = :hash")->setParameter("hash", $hash)
+			->where("o.hash = :hash")
+			->setParameter("hash", $hash)
 			->getQuery()->getOneOrNullResult();
 	}
 
@@ -36,7 +37,8 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 			$chunkOnions = $this->createQueryBuilder("o")
 				->select("o,r")
 				->leftJoin("o.resource", "r")
-				->where("o.hash IN (:hashes)")->setParameter("hashes", $chunkHashes)
+				->where("o.hash IN (:hashes)")
+				->setParameter("hashes", $chunkHashes)
 				->getQuery()->getResult();
 			foreach($chunkOnions as $o) {
 				$onions[] = $o;
@@ -114,6 +116,28 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		return $onions;
 	}
 
+	public function findMostReferedAndActive($limit = 0) {
+		$qb = $this->createQueryBuilder("o")
+			->select("o, r")
+			->leftJoin("o.resource", "r")
+			->where("r.dateLastSeen > :sevenDaysAgo")
+			->setParameter("sevenDaysAgo", new \DateTime("7 days ago"))
+			->orderBy("o.countRefererOnions", "DESC");
+
+		if($limit > 0) {
+			$qb->setMaxResults($limit);
+		}
+
+		$resultOnions = $qb->getQuery()->getResult();
+
+		$onions = [];
+		foreach($resultOnions as $o) {
+			$onions[] = $o;
+		}
+
+		return $onions;
+	}
+
 	public function findListings($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")
@@ -169,7 +193,8 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		return $this->createQueryBuilder("o")
 			->select("COUNT(ro)")
 			->leftJoin("o.refererOnions", "ro")
-			->where("o.id = :onionId")->setParameter("onionId", $onion->getId())
+			->where("o.id = :onionId")
+			->setParameter("onionId", $onion->getId())
 			->getQuery()->getSingleScalarResult();
 	}
 }
