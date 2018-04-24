@@ -23,11 +23,7 @@ class HtmlParser {
     public function getUrlsFromHtml($html, $htmlUrl = null) {
         $urls = array();
 
-        $html = str_replace(
-            ["&shy;", "&#173;", "&#xAD;"],
-            "", 
-            $html
-        );
+        $html = str_replace(["&shy;", "&#173;", "&#xAD;"], "", $html);
 
         $crawler = new Crawler($html);
         $linkNodes = $crawler->filter("a");

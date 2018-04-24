@@ -351,6 +351,8 @@ class Parser {
     public function getOnionsForHashes($hashes) {
         $onions = [];
 
+        $hashes = array_map("strtolower", $hashes);
+
         $dbOnions = $this->em->getRepository("AppBundle:Onion")->findForHashes($hashes);
         $dbHashes = [];
         foreach($dbOnions as $o) {
