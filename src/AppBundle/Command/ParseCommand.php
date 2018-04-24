@@ -231,12 +231,12 @@ class ParseCommand extends ContainerAwareCommand {
                         $urls[] = $resourceUrl;
                         if($mode == "deep") {
                             array_unshift($parseUrls, [
-                                "url" => $resource->getUrl(),
+                                "url" => $resourceUrl,
                                 "depth" => $newDepth
                             ]);
                         } else {
                             $parseUrls[] = [
-                                "url" => $resource->getUrl(),
+                                "url" => $resourceUrl,
                                 "depth" => $newDepth
                             ];
                         }
