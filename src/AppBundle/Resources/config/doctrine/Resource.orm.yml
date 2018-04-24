@@ -56,11 +56,10 @@ AppBundle\Entity\Resource:
                 inverseJoinColumns:
                     refered_id:
                         referencedColumnName: id
-            cascade: ["persist", "remove"]
+            cascade: ["persist"]
         refererResources:
             targetEntity: Resource
             mappedBy: referedResources
-            cascade: ["remove"]
     manyToOne:
         onion:
             targetEntity: Onion
@@ -73,11 +72,10 @@ AppBundle\Entity\Resource:
         errors:
             targetEntity: ResourceError
             mappedBy: resource
-            cascade: ["persist", "remove"]
+            cascade: ["persist"]
         resourceWords:
             targetEntity: ResourceWord
             mappedBy: resource
-            cascade: ["remove"]
     uniqueConstraints:
         url_hash_idx:
             columns: [ url_hash ]

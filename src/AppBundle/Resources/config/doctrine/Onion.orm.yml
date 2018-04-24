@@ -50,6 +50,7 @@ AppBundle\Entity\Onion:
                 referencedColumnName: id
                 nullable: true
                 cascade: ["persist"]
+                onDelete: "SET NULL"
     uniqueConstraints:
         onion_hash_idx:
             columns: [ hash ]

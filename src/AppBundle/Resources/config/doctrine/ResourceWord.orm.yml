@@ -17,9 +17,13 @@ AppBundle\Entity\ResourceWord:
         resource:
             targetEntity: Resource
             inversedBy: resourceWords
+            joinColumn:
+                onDelete: "CASCADE"
         word:
             targetEntity: Word
             inversedBy: resourceWords
+            joinColumn:
+                onDelete: "CASCADE"
     uniqueConstraints:
         rword_resource_word_uniq_idx:
             columns: [ resource_id, word_id ]

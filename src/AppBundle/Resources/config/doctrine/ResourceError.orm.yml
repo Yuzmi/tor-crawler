@@ -21,6 +21,8 @@ AppBundle\Entity\ResourceError:
         resource:
             targetEntity: Resource
             inversedBy: errors
+            joinColumn:
+                onDelete: "CASCADE"
     uniqueConstraints:
         resourcerror_label_resource_idx:
             columns: [ label, resource_id ]
