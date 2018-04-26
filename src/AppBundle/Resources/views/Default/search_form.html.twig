@@ -1,0 +1,12 @@
+<form class="form-group" method="get" action="{{ path('search') }}">
+	<input class="form-control input-lg" type="text" name="q" value="{{ q is defined ? q }}" placeholder="Search... (experimental)" required>
+	<br>
+	<div class="row">
+		<div class="col-sm-6 col-sm-offset-3">
+			<button class="btn btn-primary btn-lg btn-block">
+				<i class="fa fa-search"></i>
+				Search
+			</button>
+		</div>
+	</div>
+</form>

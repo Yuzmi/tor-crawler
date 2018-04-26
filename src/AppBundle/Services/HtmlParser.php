@@ -9,8 +9,11 @@ class HtmlParser {
 	public function getTitleFromHtml($html) {
         $title = null;
 
-        if(preg_match('#<title>(.*)</title>#isU', $html, $match)) {
-            $title = $match[1];
+        $crawler = new Crawler($html);
+        $titleNode = $crawler->filter("head title");
+
+        if($titleNode->count() > 0) {
+            $title = $titleNode->text();
             $title = mb_convert_encoding($title, 'UTF-8');
             $title = html_entity_decode($title);
             $title = preg_replace('/\s+/', ' ', $title);
@@ -18,6 +21,19 @@ class HtmlParser {
         }
 
         return $title;
+    }
+
+    public function getDescriptionFromHtml($html) {
+        $description = null;
+
+        $crawler = new Crawler($html);
+        $descriptionNode = $crawler->filter("head meta[name='description']");
+        
+        if($descriptionNode->count() > 0) {
+            $description = $descriptionNode->attr("content");
+        }
+
+        return $description;
     }
 
     public function getUrlsFromHtml($html, $htmlUrl = null) {
@@ -66,7 +82,7 @@ class HtmlParser {
 
         if(preg_match_all('#([a-z2-7]{16}|[a-z2-7]{56})\.onion#i', $content, $matches)) {
             foreach($matches[1] as $hash) {
-                $hashes[] = mb_strtolower($hash);
+                $hashes[] = strtolower($hash);
             }
         }
 

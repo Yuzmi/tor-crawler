@@ -1,0 +1,49 @@
+{% extends "base.html.twig" %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-10 col-sm-offset-1">
+				{% include "@App/Default/search_form.html.twig" %}
+			</div>
+		</div>
+
+		{% if resources is not null %}
+			<br>
+
+			<div class="text-center">
+			    {{ resources.totalItemCount }} result{{ resources.totalItemCount > 1 ? "s" }}
+			</div>
+
+			<div class="text-center">
+			    {{ knp_pagination_render(resources) }}
+			</div>
+
+			<div class="row">
+				<div class="col-xs-12 col-md-10 col-md-offset-1">
+					{% for r in resources %}
+						<a class="searchResult" href="{{ r.url }}">
+							<div class="title" rel="noopener noreferrer" title="{{ r.title ?: r.url }}">
+								{{ r.title ? r.title|shorten(100) : r.url|shorten(100) }}
+							</div>
+							{% if r.title %}
+								<div class="url" title="{{ r.url }}">
+									{{ r.url|shorten(100) }}
+								</div>
+							{% endif %}
+							{% if r.description %}
+								<div class="description">
+									{{ r.description|shorten(300) }}
+								</div>
+							{% endif %}
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+
+			<div class="text-center">
+			    {{ knp_pagination_render(resources) }}
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}

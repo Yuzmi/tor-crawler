@@ -41,3 +41,7 @@ services:
     parser:
         alias: AppBundle\Services\Parser
         public: true
+
+    relevance_manager:
+        alias: AppBundle\Services\RelevanceManager
+        public: true

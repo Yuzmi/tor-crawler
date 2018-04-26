@@ -1,29 +1,12 @@
 {% extends "base.html.twig" %}
 
 {% block content %}
-	<h1 class="text-center">
-		<a href="{{ path('homepage') }}">
-			Tor Crawler
-		</a>
-	</h1>
-
-	<br>
-
 	<div class="container">
-		{{ form_start(searchForm) }}
-		<div class="form-group">
-			{{ form_widget(searchForm.query, {"attr": {"class": "form-control input-lg"}}) }}
-			<br>
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-3">
-					<button class="btn btn-primary btn-lg btn-block">
-						<i class="fa fa-search"></i>
-						Search
-					</button>
-				</div>
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1">
+				{% include "@App/Default/search_form.html.twig" %}
 			</div>
 		</div>
-		{{ form_end(searchForm) }}
 
 		<br>
 
@@ -36,7 +19,7 @@
 						</div>
 					</div>
 					<table class="table table-striped">
-						{% for onion in addedOnions %}
+						{% for onion in newOnions %}
 							<tr>
 								<td title="{{ onion.dateCreated|date("Y-m-d H:i") }}">
 									{{ onion.dateCreated|ago(true) }}
@@ -118,30 +101,57 @@
 			</div>
 		</div>
 
-		{% if popularOnions|length > 0 %}
-			<br>
-
-			<div class="panel panel-primary">
-				<div class="panel-heading">
-					<div class="panel-title">
-						Popular onions
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<div class="panel-title">
+							Popular onions
+						</div>
 					</div>
+					{% if popularOnions|length > 0 %}
+						<ul class="list-group">
+							{% for popOnion in popularOnions|slice(0,30) %}
+								<li class="list-group-item">
+									<a href="{{ popOnion.url }}">
+										{% if popOnion.onions|length > 1 %}
+											{{ popOnion.onions|length }} onions
+										{% else %}
+											{{ popOnion.onions[0].hash|shorten(20) }}
+										{% endif %}
+									</a>
+									- {{ popOnion.title|shorten(60) }}
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
 				</div>
-				<ul class="list-group">
-					{% for popOnion in popularOnions %}
-						<li class="list-group-item">
-							<a href="{{ popOnion.url }}">
-								{% if popOnion.onions|length > 1 %}
-									{{ popOnion.onions|length }} onions
-								{% else %}
-									{{ popOnion.onions[0].hash }}
-								{% endif %}
-							</a>
-							- {{ popOnion.title }}
-						</li>
-					{% endfor %}
-				</ul>
 			</div>
-		{% endif %}
+			<div class="col-sm-6">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<div class="panel-title">
+							Wikis / Directories / Links
+						</div>
+					</div>
+					{% if listingOnions|length > 0 %}
+						<ul class="list-group">
+							{% for listingOnion in listingOnions|slice(0,30) %}
+								<li class="list-group-item">
+									<a href="{{ listingOnion.url }}">
+										{% if listingOnion.onions|length > 1 %}
+											{{ listingOnion.onions|length }} onions
+										{% else %}
+											{{ listingOnion.onions[0].hash|shorten(20) }}
+										{% endif %}
+									</a>
+									- {{ listingOnion.title|shorten(60) }}
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+			</div>
+		</div>
 	</div>
 {% endblock %}

@@ -54,7 +54,7 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 			->getQuery()->getScalarResult();
 	}
 
-	public function findLastAdded($limit = 0) {
+	public function findNew($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")
 			->leftJoin("o.resource", "r")
@@ -95,27 +95,6 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		return $qb->getQuery()->getResult();
 	}
 
-	public function findMostRefered($limit = 0) {
-		$qb = $this->createQueryBuilder("o")
-			->select("o, r")
-			->leftJoin("o.resource", "r")
-			->where("r.dateLastSeen IS NOT NULL")
-			->orderBy("o.countRefererOnions", "DESC");
-
-		if($limit > 0) {
-			$qb->setMaxResults($limit);
-		}
-
-		$resultOnions = $qb->getQuery()->getResult();
-
-		$onions = [];
-		foreach($resultOnions as $o) {
-			$onions[] = $o;
-		}
-
-		return $onions;
-	}
-
 	public function findMostReferedAndActive($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")
@@ -138,11 +117,12 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 		return $onions;
 	}
 
-	public function findListings($limit = 0) {
+	public function findMostRefererAndActive($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")
 			->leftJoin("o.resource", "r")
-			->where("r.dateLastSeen IS NOT NULL")
+			->where("r.dateLastSeen > :sevenDaysAgo")
+			->setParameter("sevenDaysAgo", new \DateTime("7 days ago"))
 			->orderBy("o.countReferedOnions", "DESC");
 
 		if($limit > 0) {
@@ -153,7 +133,7 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 
 		$onions = [];
 		foreach($resultOnions as $o) {
-			$onions[] = $o[0];
+			$onions[] = $o;
 		}
 
 		return $onions;

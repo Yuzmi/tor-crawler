@@ -10,3 +10,43 @@ body > .alert {
 h1 a:hover, h1 a:focus {
 	text-decoration:none;
 }
+
+.searchResult {
+	border-top:solid 1px #ddd;
+	cursor:pointer;
+	display:block;
+	font-size:0.9em;
+	padding:0.5em 0.8em;
+}
+
+.searchResult:first-of-type {
+	border-top:0;
+}
+
+.searchResult .title {
+	display:block;
+	font-size:1.3em;
+	line-height:1.4em;
+	height:1.4em;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+	width:100%;
+}
+
+.searchResult .url {
+	color:#777;
+}
+
+.searchResult .description {
+	color:#212121;
+}
+
+.searchResult:hover, .searchResult:focus {
+	background-color:#f6f6f6;
+	text-decoration:none;
+}
+
+.searchResult:hover .title, .searchResult:focus .title {
+	text-decoration:underline
+}

@@ -10,7 +10,13 @@ class Resource
     private $url;
     private $hashUrl;
     private $title;
+    private $description;
+    private $contentType;
+    private $httpCode;
+    private $domain;
+    private $subdomain;
     private $lastLength;
+    private $relevance;
     private $lastError;
     private $dateCreated;
     private $dateChecked;
@@ -33,6 +39,7 @@ class Resource
         $this->dateCreated = new \DateTime();
         $this->totalSuccess = 0;
         $this->countErrors = 0;
+        $this->relevance = 0;
 
         if($url) {
             $this->setUrl($url);
@@ -64,6 +71,23 @@ class Resource
     {
         $this->url = $url;
         $this->hashUrl = hash('sha512', $url);
+
+        $hostname = parse_url($url, PHP_URL_HOST);
+        if($hostname !== false && filter_var($hostname, FILTER_VALIDATE_IP) === false) {
+            $domains = explode(".", $hostname);
+            $countDomains = count($domains);
+
+            if($countDomains > 1) {
+                // Domain
+                $this->domain = implode(".", array_slice($domains, $countDomains-2, 2));
+
+                if($countDomains > 2) {
+                    // Subdomain
+                    $this->subdomain = implode(".", array_slice($domains, 0, $countDomains-2));
+                }
+            }
+        }
+
         return $this;
     }
 
@@ -476,5 +500,149 @@ class Resource
     public function getRefererResources()
     {
         return $this->refererResources;
+    }
+
+    /**
+     * Set domain
+     *
+     * @param string $domain
+     *
+     * @return Resource
+     */
+    public function setDomain($domain)
+    {
+        $this->domain = $domain;
+
+        return $this;
+    }
+
+    /**
+     * Get domain
+     *
+     * @return string
+     */
+    public function getDomain()
+    {
+        return $this->domain;
+    }
+
+    /**
+     * Set subdomain
+     *
+     * @param string $subdomain
+     *
+     * @return Resource
+     */
+    public function setSubdomain($subdomain)
+    {
+        $this->subdomain = $subdomain;
+
+        return $this;
+    }
+
+    /**
+     * Get subdomain
+     *
+     * @return string
+     */
+    public function getSubdomain()
+    {
+        return $this->subdomain;
+    }
+
+    /**
+     * Set description
+     *
+     * @param string $description
+     *
+     * @return Resource
+     */
+    public function setDescription($description)
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * Get description
+     *
+     * @return string
+     */
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Set relevance
+     *
+     * @param integer $relevance
+     *
+     * @return Resource
+     */
+    public function setRelevance($relevance)
+    {
+        $this->relevance = $relevance;
+
+        return $this;
+    }
+
+    /**
+     * Get relevance
+     *
+     * @return integer
+     */
+    public function getRelevance()
+    {
+        return $this->relevance;
+    }
+
+    /**
+     * Set contentType
+     *
+     * @param string $contentType
+     *
+     * @return Resource
+     */
+    public function setContentType($contentType)
+    {
+        $this->contentType = $contentType;
+
+        return $this;
+    }
+
+    /**
+     * Get contentType
+     *
+     * @return string
+     */
+    public function getContentType()
+    {
+        return $this->contentType;
+    }
+
+    /**
+     * Set httpCode
+     *
+     * @param string $httpCode
+     *
+     * @return Resource
+     */
+    public function setHttpCode($httpCode)
+    {
+        $this->httpCode = $httpCode;
+
+        return $this;
+    }
+
+    /**
+     * Get httpCode
+     *
+     * @return string
+     */
+    public function getHttpCode()
+    {
+        return $this->httpCode;
     }
 }

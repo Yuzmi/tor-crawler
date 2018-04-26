@@ -3,6 +3,7 @@
 namespace AppBundle\Services;
 
 use AppBundle\Services\HtmlParser;
+use AppBundle\Services\RelevanceManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -15,10 +16,16 @@ use AppBundle\Entity\Word;
 class Parser {
     private $em;
     private $htmlParser;
+    private $rm;
 
-    public function __construct(EntityManagerInterface $em, HtmlParser $htmlParser) {
+    public function __construct(
+        EntityManagerInterface $em, 
+        HtmlParser $htmlParser,
+        RelevanceManager $rm
+    ) {
         $this->em = $em;
         $this->htmlParser = $htmlParser;
+        $this->rm = $rm;
     }
 
     private $userAgents = [
@@ -27,7 +34,8 @@ class Parser {
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1",
         "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:21.0) Gecko/20130330 Firefox/21.0",
         "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0",
-        "Mozilla/5.0 (Windows NT 6.1; rv:52.0) Gecko/20100101 Firefox/52.0"
+        "Mozilla/5.0 (Windows NT 6.1; rv:52.0) Gecko/20100101 Firefox/52.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0"
     ];
 
     // https://stackoverflow.com/questions/15445285
@@ -63,6 +71,8 @@ class Parser {
         $time_end = microtime(true);
 
         $response["duration"] = $time_end - $time_start;
+        $response["httpCode"] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response["contentType"] = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 
         if($content === false) {
             $response["error"] = curl_error($ch);
@@ -106,6 +116,15 @@ class Parser {
         if($data["success"]) {
             // Title
             $data["title"] = $this->htmlParser->getTitleFromHtml($data["content"]);
+
+            // Description
+            $data["description"] = $this->htmlParser->getDescriptionFromHtml($data["content"]);
+
+            // HTTP code
+            $data["httpCode"] = intval($data["httpCode"]);
+
+            // Content type
+            $data["contentType"] = trim(explode(";", $data["contentType"])[0]);
 
             // Length
             $data["length"] = mb_strlen($data["content"]);
@@ -176,6 +195,24 @@ class Parser {
             $title = mb_substr($data["title"], 0, 191);
             if(!empty($title)) {
                 $resource->setTitle($title);
+            }
+
+            // Description
+            $description = $data["description"];
+            if(!empty($description)) {
+                $resource->setDescription($description);
+            }
+
+            // HTTP code
+            $httpCode = $data["httpCode"];
+            if($httpCode) {
+                $resource->setHttpCode($httpCode);
+            }
+
+            // Content type
+            $contentType = mb_substr($data["contentType"], 0, 191);
+            if(!empty($contentType)) {
+                $resource->setContentType($contentType);
             }
 
             // Content length
@@ -304,6 +341,10 @@ class Parser {
             }
         }
 
+        // Relevance
+        $relevance = $this->rm->getRelevanceForResource($resource);
+        $resource->setRelevance($relevance);
+
         // Enregistrement
         $this->em->persist($resource);
         $this->em->flush();
@@ -317,7 +358,7 @@ class Parser {
         $hostname = parse_url($url, PHP_URL_HOST);
 
         if($hostname !== false && preg_match('#([a-z2-7]{16}|[a-z2-7]{56})\.onion$#i', $hostname, $match)) {
-            return $returnHash ? $match[1] : true;
+            return $returnHash ? strtolower($match[1]) : true;
         }
 
         return false;
@@ -350,8 +391,6 @@ class Parser {
 
     public function getOnionsForHashes($hashes) {
         $onions = [];
-
-        $hashes = array_map("strtolower", $hashes);
 
         $dbOnions = $this->em->getRepository("AppBundle:Onion")->findForHashes($hashes);
         $dbHashes = [];

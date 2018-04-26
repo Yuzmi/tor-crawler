@@ -16,9 +16,29 @@ AppBundle\Entity\Resource:
         title:
             type: text
             nullable: true
+        description:
+            type: text
+            nullable: true
+        contentType:
+            type: string
+            length: 191
+            nullable: true
+        httpCode:
+            type: string
+            length: 3
+            nullable: true
+        domain:
+            type: string
+            length: 191
+            nullable: true
+        subdomain:
+            type: text
+            nullable: true
         lastLength:
             type: integer
             nullable: true
+        relevance:
+            type: integer
         totalSuccess:
             type: integer
             column: success_total

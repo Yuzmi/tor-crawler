@@ -114,7 +114,9 @@ function getUrlContent(iT, url, callback) {
 		"content": null,
 		"error": null,
 		"dateUTC": new Date().toUTCString(),
-		"duration": 0
+		"duration": 0,
+		"httpCode": null,
+		"contentType": null
 	};
 
 	var t = null;
@@ -134,6 +136,11 @@ function getUrlContent(iT, url, callback) {
 		result.content = !errReq ? body : null;
 		result.error = errReq ? errReq.toString() : null;
 		result.duration = Math.round((Date.now() - timeStart) / 1000);
+
+		if(res) {
+			result.httpCode = res.statusCode;
+			result.contentType = res.headers["content-type"];
+		}
 
 		saveUrlResult(iT, url, result);
 
