@@ -21,8 +21,8 @@
 					<table class="table table-striped">
 						{% for onion in newOnions %}
 							<tr>
-								<td title="{{ onion.dateFirstSeen|date("Y-m-d H:i") }}">
-									{{ onion.dateFirstSeen|ago }}
+								<td title="{{ onion.resource ? onion.resource.dateFirstSeen|date("Y-m-d H:i") }}">
+									{{ onion.resource ? onion.resource.dateFirstSeen|ago : "-" }}
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
 									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
