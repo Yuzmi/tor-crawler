@@ -21,23 +21,14 @@
 					<table class="table table-striped">
 						{% for onion in newOnions %}
 							<tr>
-								<td title="{{ onion.dateCreated|date("Y-m-d H:i") }}">
-									{{ onion.dateCreated|ago }}
+								<td title="{{ onion.dateFirstSeen|date("Y-m-d H:i") }}">
+									{{ onion.dateFirstSeen|ago }}
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
 									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
 										{{ onion.hash|shorten(20) }}
 									</a>
 								</td>
-								{#<td class="text-center">
-									{% if not onion.resource or not onion.resource.dateChecked %}
-										<i class="fa fa-question text-muted"></i>
-									{% elseif onion.resource and onion.resource.dateChecked == onion.resource.dateLastSeen %}
-										<i class="fa fa-check text-success"></i>
-									{% else %}
-										<i class="fa fa-times text-danger"></i>
-									{% endif %}
-								</td>#}
 							</tr>
 						{% endfor %}
 					</table>
