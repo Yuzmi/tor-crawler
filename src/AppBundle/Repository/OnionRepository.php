@@ -54,11 +54,12 @@ class OnionRepository extends \Doctrine\ORM\EntityRepository
 			->getQuery()->getScalarResult();
 	}
 
-	public function findNew($limit = 0) {
+	public function findNewAndSeen($limit = 0) {
 		$qb = $this->createQueryBuilder("o")
 			->select("o, r")
 			->leftJoin("o.resource", "r")
-			->orderBy("o.dateCreated", "DESC");
+			->where("r.dateLastSeen IS NOT NULL")
+			->orderBy("r.dateFirstSeen", "DESC");
 
 		if($limit > 0) {
 			$qb->setMaxResults($limit);

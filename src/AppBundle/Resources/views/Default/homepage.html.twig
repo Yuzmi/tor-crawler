@@ -1,7 +1,7 @@
 {% extends "base.html.twig" %}
 
 {% block content %}
-	<div class="container">
+	<div class="container homepage">
 		<div class="row">
 			<div class="col-md-10 col-md-offset-1">
 				{% include "@App/Default/search_form.html.twig" %}
@@ -11,7 +11,7 @@
 		<br>
 
 		<div class="row">
-			<div class="col-sm-4">
+			<div class="col-sm-6">
 				<div class="panel panel-primary">
 					<div class="panel-heading">
 						<div class="panel-title">
@@ -22,14 +22,14 @@
 						{% for onion in newOnions %}
 							<tr>
 								<td title="{{ onion.dateCreated|date("Y-m-d H:i") }}">
-									{{ onion.dateCreated|ago(true) }}
+									{{ onion.dateCreated|ago }}
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
 									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
 										{{ onion.hash|shorten(20) }}
 									</a>
 								</td>
-								<td class="text-center hidden-sm">
+								{#<td class="text-center">
 									{% if not onion.resource or not onion.resource.dateChecked %}
 										<i class="fa fa-question text-muted"></i>
 									{% elseif onion.resource and onion.resource.dateChecked == onion.resource.dateLastSeen %}
@@ -37,13 +37,13 @@
 									{% else %}
 										<i class="fa fa-times text-danger"></i>
 									{% endif %}
-								</td>
+								</td>#}
 							</tr>
 						{% endfor %}
 					</table>
 				</div>
 			</div>
-			<div class="col-sm-4">
+			<div class="col-sm-6">
 				<div class="panel panel-primary">
 					<div class="panel-heading">
 						<div class="panel-title">
@@ -54,45 +54,21 @@
 						{% for onion in checkedOnions %}
 							<tr>
 								<td title="{{ onion.resource ? onion.resource.dateChecked|date("Y-m-d H:i") }}">
-									{{ onion.resource ? onion.resource.dateChecked|ago(true) : "~" }}
+									{{ onion.resource ? onion.resource.dateChecked|ago : "~" }}
 								</td>
 								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
 									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
 										{{ onion.hash|shorten(20) }}
 									</a>
 								</td>
-								<td class="text-center hidden-sm">
-									{% if onion.resource and onion.resource.dateChecked == onion.resource.dateLastSeen %}
+								<td class="text-center">
+									{% if not onion.resource or not onion.resource.dateChecked %}
+										<i class="fa fa-question text-muted"></i>
+									{% elseif onion.resource and onion.resource.dateChecked == onion.resource.dateLastSeen %}
 										<i class="fa fa-check text-success"></i>
 									{% else %}
 										<i class="fa fa-times text-danger"></i>
 									{% endif %}
-								</td>
-							</tr>
-						{% endfor %}
-					</table>
-				</div>
-			</div>
-			<div class="col-sm-4">
-				<div class="panel panel-primary">
-					<div class="panel-heading">
-						<div class="panel-title">
-							Valid onions
-						</div>
-					</div>
-					<table class="table table-striped">
-						{% for onion in seenOnions %}
-							<tr>
-								<td title="{{ onion.resource ? onion.resource.dateLastSeen|date("Y-m-d H:i") }}">
-									{{ onion.resource ? onion.resource.dateLastSeen|ago(true) : "~" }}
-								</td>
-								<td title="{{ onion.resource ? onion.resource.title : onion.hash }}">
-									<a href="{{ path('onion_show', {'hash': onion.hash}) }}">
-										{{ onion.hash|shorten(20) }}
-									</a>
-								</td>
-								<td class="text-center hidden-sm">
-									<i class="fa fa-check text-success"></i>
 								</td>
 							</tr>
 						{% endfor %}
@@ -112,15 +88,16 @@
 					{% if popularOnions|length > 0 %}
 						<ul class="list-group">
 							{% for popOnion in popularOnions|slice(0,30) %}
-								<li class="list-group-item">
+								<li class="list-group-item" title="{{ popOnion.title }}">
 									<a href="{{ popOnion.url }}">
 										{% if popOnion.onions|length > 1 %}
+											<i class="fa fa-plus"></i>
 											{{ popOnion.onions|length }} onions
 										{% else %}
 											{{ popOnion.onions[0].hash|shorten(20) }}
 										{% endif %}
 									</a>
-									- {{ popOnion.title|shorten(60) }}
+									- {{ popOnion.title|shorten(100) }}
 								</li>
 							{% endfor %}
 						</ul>
@@ -137,15 +114,16 @@
 					{% if listingOnions|length > 0 %}
 						<ul class="list-group">
 							{% for listingOnion in listingOnions|slice(0,30) %}
-								<li class="list-group-item">
+								<li class="list-group-item" title="{{ listingOnion.title }}">
 									<a href="{{ listingOnion.url }}">
 										{% if listingOnion.onions|length > 1 %}
+											<i class="fa fa-plus"></i>
 											{{ listingOnion.onions|length }} onions
 										{% else %}
 											{{ listingOnion.onions[0].hash|shorten(20) }}
 										{% endif %}
 									</a>
-									- {{ listingOnion.title|shorten(60) }}
+									- {{ listingOnion.title|shorten(100) }}
 								</li>
 							{% endfor %}
 						</ul>

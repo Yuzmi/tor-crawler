@@ -96,7 +96,7 @@ class DailyCommand extends ContainerAwareCommand {
             $em->flush();
             $em->clear();
 
-            if($iOnion%10 == 0) {
+            if($iOnion%100 == 0) {
                 $output->write(".");
             }
             $iOnion++;
@@ -123,11 +123,11 @@ class DailyCommand extends ContainerAwareCommand {
 
             $em->persist($word);
 
-            if($iWord%100 == 0) {
+            if($iWord%1000 == 0) {
                 $output->write(".");
             }
             $iWord++;
-            if($iWord%100 == 0 || $iWord == $countWords) {
+            if($iWord%1000 == 0 || $iWord == $countWords) {
                 $em->flush();
                 $em->clear();
             }

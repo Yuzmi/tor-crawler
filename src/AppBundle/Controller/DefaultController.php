@@ -6,12 +6,11 @@ use Symfony\Component\HttpFoundation\Request;
 
 class DefaultController extends BaseController {
     public function homepageAction(Request $request) {
-        $newOnions = $this->getRepo("Onion")->findNew(10);
+        $newOnions = $this->getRepo("Onion")->findNewAndSeen(10);
         $checkedOnions = $this->getRepo("Onion")->findLastChecked(10);
-        $seenOnions = $this->getRepo("Onion")->findLastSeen(10);
 
         $popularOnions = [];
-        $mostReferedOnions = $this->getRepo("Onion")->findMostReferedAndActive(100);
+        $mostReferedOnions = $this->getRepo("Onion")->findMostReferedAndActive(200);
         foreach($mostReferedOnions as $onion) {
             $title = $onion->getResource() ? $onion->getResource()->getTitle() : null;
             if($title) {
@@ -35,7 +34,7 @@ class DefaultController extends BaseController {
         }
 
         $listingOnions = [];
-        $mostRefererOnions = $this->getRepo("Onion")->findMostRefererAndActive(100);
+        $mostRefererOnions = $this->getRepo("Onion")->findMostRefererAndActive(200);
         foreach($mostRefererOnions as $onion) {
             $title = $onion->getResource() ? $onion->getResource()->getTitle() : null;
             if($title) {
@@ -61,7 +60,6 @@ class DefaultController extends BaseController {
         return $this->render("@App/Default/homepage.html.twig", array(
         	"newOnions" => $newOnions,
             "checkedOnions" => $checkedOnions,
-            "seenOnions" => $seenOnions,
             "popularOnions" => $popularOnions,
             "listingOnions" => $listingOnions
         ));

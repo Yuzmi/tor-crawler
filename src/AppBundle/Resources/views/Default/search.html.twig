@@ -9,11 +9,9 @@
 		</div>
 
 		{% if resources is not null %}
-			<br>
-
-			<div class="text-center">
+			<p class="text-center">
 			    {{ resources.totalItemCount }} result{{ resources.totalItemCount > 1 ? "s" }}
-			</div>
+			</p>
 
 			<div class="text-center">
 			    {{ knp_pagination_render(resources) }}
