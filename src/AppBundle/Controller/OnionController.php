@@ -76,8 +76,11 @@ class OnionController extends BaseController {
         }
 
         $onions = $qb->getQuery()->getArrayResult();
-
         $hashes = array_column($onions, "hash");
+
+        array_walk($hashes, function(&$value) {
+            $value .= ".onion";
+        });
 
         $format = $request->query->get("format");
         if($format == "json") {
