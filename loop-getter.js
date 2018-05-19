@@ -71,7 +71,7 @@ var app = {
 					app.debug.log("Waiting for more urls");
 					setTimeout(function() {
 						app.urls.getOne(callback);
-					}, 1000);
+					}, 5000);
 				} else {
 					app.urls.getMore(function() {
 						app.urls.getOne(callback);
@@ -92,14 +92,22 @@ var app = {
 						urls = app.utils.shuffle(urls);
 					}
 
-					app.urls.list = urls;
-					if(app.urls.list.length > 0) {
-						if(callback) callback();
+					if(urls.length > 0) {
+						app.urls.list = urls;
+						if(app.urls.list.length > 0) {
+							if(callback) callback();
+						}
+						app.urls.getting = false;
+					} else {
+						app.debug.log("No url, waiting to try again.");
+						setTimeout(function() {
+							app.urls.getMore(callback);
+						}, 60000);
 					}
 		        } else {
+		        	app.urls.getting = false;
 		        	console.log(err);
 		        }
-		        app.urls.getting = false;
 			});
 		}
 	},

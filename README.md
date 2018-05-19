@@ -96,6 +96,8 @@ nodejs multi-getter.js -t30 # 30s timeout, default: 60
 nodejs multi-getter.js -o url # Order by url/created/unchecked, default: created
 nodejs multi-getter.js -l # Loop
 nodejs multi-getter.js -l -o unchecked --first-only # My favorite
+
+nodejs loop-getter.js
 ```
 
 [CRON](https://crontab.guru/)
@@ -106,6 +108,5 @@ nodejs multi-getter.js -l -o unchecked --first-only # My favorite
 0 0 * * * php /var/www/tor-crawler/bin/console app:daily
 
 # Parse onions
-0 12 * * * nodejs /var/www/tor-crawler/multi-getter.js
-
+0 0,6,12,18 * * * nodejs /var/www/tor-crawler/loop-getter.js --script-timeout=21600
 ```
