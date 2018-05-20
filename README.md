@@ -1,7 +1,7 @@
 Tor crawler
 ===========
 
-Installation (for Ubuntu)
+Installation (for Ubuntu 16.04)
 ------------
 
 Linux Packages
@@ -14,7 +14,8 @@ sudo apt install apache2 libapache2-mod-php7.0 mysql-server php7.0 php7.0-curl p
 sudo apt install tor
 # Then (for the last version)
 sudo apt install gcc libevent-dev make
-wget https://www.torproject.org/dist/tor-0.3.2.10.tar.gz && cd tor-0.3.2.10
+wget https://www.torproject.org/dist/tor-0.3.2.10.tar.gz
+tar -xzf tor-0.3.2.10.tar.gz && cd tor-0.3.2.10
 ./configure && make && make install
 ```
 
@@ -26,24 +27,24 @@ git clone https://github.com/Yuzmi/tor-crawler.git
 Apache (/etc/apache2/sites-available/000-default.conf)
 ```
 DocumentRoot /var/www/tor-crawler/web
-<Directory "/var/www/agress">
+<Directory "/var/www/tor-crawler/web">
 	AllowOverride All
 </Directory>
 
 # THEN
 
-sudo a2enmod rewrite && sudo service apache2 restart  
+sudo a2enmod rewrite && sudo service apache2 restart
 ```
 
 Composer
 ```
 bash composer.sh
-php composer.phar install 
+php composer.phar install
 ```
 
 Node packages
 ```
-npm install  
+npm install
 ```
 
 Database
