@@ -41,6 +41,7 @@ class OnionController extends BaseController {
 
         if(!$request->query->get("sort")) {
             $qb->orderBy("o.dateCreated", "DESC");
+            $qb->addOrderBy("r.dateFirstSeen", "DESC");
         }
 
     	$onions = $this->get('knp_paginator')->paginate(

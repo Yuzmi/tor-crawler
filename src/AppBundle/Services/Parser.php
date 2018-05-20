@@ -124,7 +124,7 @@ class Parser {
             $data["httpCode"] = intval($data["httpCode"]);
 
             // Content type
-            $data["contentType"] = trim(explode(";", $data["contentType"])[0]);
+            $data["contentType"] = isset($data["contentType"]) ? trim(explode(";", $data["contentType"])[0]) : null;
 
             // Length
             $data["length"] = mb_strlen($data["content"]);
