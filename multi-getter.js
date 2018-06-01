@@ -46,7 +46,7 @@ function getUrls(callback) {
 		gettingUrls = true;
 	}
 
-	var command = "php "+__dirname+"/bin/console app:get:urls "+chunkSize+" "+(chunkSize*iChunk);
+	var command = "php "+__dirname+"/bin/console app:get:urls "+chunkSize+" "+(chunkSize*iChunk)+" --env=prod --no-debug";
 	if(filter) command += " -f "+filter;
 	if(order) command += " -o "+order;
 
@@ -182,7 +182,7 @@ function hash(data) {
 }
 
 function parseFile(file, callback) {
-	var command = "php "+__dirname+"/bin/console app:parse:files "+__dirname+"/var/files/"+file;
+	var command = "php "+__dirname+"/bin/console app:parse:files "+__dirname+"/var/files/"+file+" --env=prod --no-debug";
 	cmd.get(command, function(err, data, stderr) {
 		if(err) {
 			console.log(err);

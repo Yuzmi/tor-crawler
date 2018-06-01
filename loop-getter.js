@@ -84,7 +84,7 @@ var app = {
 			app.urls.getting = true;
 			app.debug.log("Getting more urls");
 
-			var command = "php "+__dirname+"/bin/console app:get:routine-urls "+app.urls.chunkSize;
+			var command = "php "+__dirname+"/bin/console app:get:routine-urls "+app.urls.chunkSize+" --env=prod --no-debug";
 			cmd.get(command, function(err, data, stderr) {
 				if(!err) {
 					var urls = JSON.parse(data);
@@ -217,7 +217,7 @@ var app = {
 	parseFile: function(file, url) {
 		app.debug.log("Parsing file for \""+url+"\"");
 
-		var command = "php "+__dirname+"/bin/console app:parse:files "+__dirname+"/var/files/"+file;
+		var command = "php "+__dirname+"/bin/console app:parse:files "+__dirname+"/var/files/"+file+" --env=prod --no-debug";
 		cmd.get(command, function(err, data, stderr) {
 			if(err) {
 				console.log(err);

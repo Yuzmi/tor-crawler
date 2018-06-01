@@ -106,7 +106,7 @@ nodejs loop-getter.js
 
 ```
 # Daily routine
-0 0 * * * php /var/www/tor-crawler/bin/console app:daily
+0 0 * * * php /var/www/tor-crawler/bin/console app:daily --env=prod --no-debug
 
 # Parse onions
 0 0,6,12,18 * * * nodejs /var/www/tor-crawler/loop-getter.js --script-timeout=21600
